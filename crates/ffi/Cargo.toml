@@ -13,7 +13,6 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-base64.workspace = true
 configuration-storage.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -11,7 +11,7 @@ response `Data`, and destroys the handle after its final dispatch. The response 
 each native result when it no longer needs its bytes.
 Await ``ConfigurationStore/open(configuration:)`` to open or claim a root immediately and
 receive admission errors before performing any snapshot operation.
-The Swift and .NET bindings require native ABI 13.
+The Swift and .NET bindings require native ABI 14.
 
 The engine owns transactions, storage ownership and format, integrity, generation conflicts,
 backup identity and retained generations. The host owns payload schemas, semantic validation,
@@ -46,7 +46,8 @@ initialized empty `Data`. `save(expectedGeneration:payload:)` requires the gener
 the host's editing base, or explicit `nil` for initialization. An observation from `load()`
 does not advance or replace that baseline. A stale write fails with
 `ConfigurationStorageError/Code/conflict` even after the caller observes a newer snapshot.
-Payloads use base64 on the wire through `Data`'s Codable support, retaining arbitrary bytes.
+Native requests carry bounded opaque bytes separately from JSON metadata.
+Standalone Codable values retain their existing `Data` representation.
 Oversized save and restore requests fail before encoding or lazily opening the store.
 
 An initialized generation is an opaque, content-bound string derived by Rust from the
@@ -211,7 +212,7 @@ prevents publication. An absent selector needs no file capture.
 `ConfigurationStorageError/Code/unsupportedFormatVersion` means the stored SQLite
 format version is unsupported. `ConfigurationStorageError/Code/unsupportedABIVersion`
 means the native ABI is incompatible, before a store is opened. The Swift and .NET
-bindings require native ABI 13, which requires reviewed identity tokens for backup rotation.
+bindings require native ABI 14, which requires reviewed identity tokens for backup rotation.
 Update native libraries and bindings together.
 
 The SQLite schema and `user_version` remain 1, and the stored `generation` column remains
@@ -280,7 +281,7 @@ throws ``ConfigurationStorageError/Code/unsupportedABIVersion`` before native qu
 creation on an ABI mismatch, or
 ``ConfigurationStorageError/Code/invalidNativeResponse`` for a missing native handle.
 Propagate this failure before accepting edits. Queue construction enforces the same
-native ABI 13 requirement as the store and independent recovery-copy APIs.
+native ABI 14 requirement as the store and independent recovery-copy APIs.
 
 `SnapshotSaveState` is a coherent observation of client revisions, independent
 of the store's opaque generation strings. State observations compare by the

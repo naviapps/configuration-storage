@@ -17,7 +17,7 @@ static class BindingAcceptanceTests
             {
                 fake.Reply = JsonSerializer.Serialize(new
                 {
-                    snapshot = new { generation = FakeNative.Generation, payload = "AQID" },
+                    snapshot = new { generation = FakeNative.Generation },
                     token = "opaque-backup-token",
                     modifiedAt = seconds
                 });
@@ -25,7 +25,7 @@ static class BindingAcceptanceTests
                 Check(backup.ModifiedAt == seconds && backup.Token == "opaque-backup-token"
                     && backup.Snapshot.Payload!.SequenceEqual(new byte[] { 1, 2, 3 }),
                     "Backup decoding rejected or changed signed Unix seconds or opaque bytes.");
-                fake.Reply = JsonSerializer.Serialize(new { payload = "AQID", digest = new string('a', 64), modifiedAt = seconds });
+                fake.Reply = JsonSerializer.Serialize(new { digest = new string('a', 64), modifiedAt = seconds });
                 var copy = await ConfigurationRecoveryCopy.ReadAsync(Path.Combine(directory, "portable.copy"), 1024, fake);
                 Check(copy.ModifiedAt == seconds && copy.Payload.SequenceEqual(new byte[] { 1, 2, 3 }),
                     "Recovery-copy decoding rejected or changed signed Unix seconds or opaque bytes.");

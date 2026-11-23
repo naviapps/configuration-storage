@@ -67,7 +67,7 @@ public sealed class ConfigurationStore : IDisposable
         try
         {
             if (error != IntPtr.Zero)
-                return Wire.Consume<StoreHandle>(error, native, static _ => throw Wire.InvalidReply());
+                return Wire.Consume<StoreHandle>(error, native, 0, static (_, _) => throw Wire.InvalidReply());
             if (owner.IsInvalid) throw Wire.InvalidReply();
             return owner;
         }
@@ -75,7 +75,7 @@ public sealed class ConfigurationStore : IDisposable
     }
 
     public Task<Snapshot> LoadAsync(CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "load" }, DecodeSnapshot, cancellationToken);
+        => ExecuteAsync(new { command = "load" }, Wire.Snapshot, cancellationToken);
 
     /// <summary>Lists unverified generation and backup metadata, including known selected files.
     /// Limit is 1 through 256; after is an opaque exclusive cursor. Concurrent edits may change
@@ -99,8 +99,7 @@ public sealed class ConfigurationStore : IDisposable
     /// selection or original files. Validate the returned opaque bytes with the host's schema
     /// before using PrepareRestoreAsync and RestoreSnapshotAsync.</summary>
     public Task<SnapshotCandidate> ReadSnapshotCandidateAsync(string id, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "readSnapshotCandidate", id },
-            root => Wire.Candidate(root, configuration.MaximumPayloadBytes), cancellationToken);
+        => ExecuteAsync(new { command = "readSnapshotCandidate", id }, Wire.Candidate, cancellationToken);
 
     public Task<Snapshot> SaveAsync(string? expectedGeneration, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
     {
@@ -109,20 +108,19 @@ public sealed class ConfigurationStore : IDisposable
             return Task.FromException<Snapshot>(new StorageException(new(ErrorCode.InvalidConfiguration)));
         // Capture before returning so caller mutation cannot change an accepted request.
         var copy = payload.ToArray();
-        return ExecuteAsync(new { command = "save", expectedGeneration, payload = copy }, DecodeSnapshot, cancellationToken);
+        return ExecuteAsync(new { command = "save", expectedGeneration }, Wire.Snapshot, cancellationToken, copy);
     }
 
     /// <summary>Returns the exact existing backup, or its absence, together with a rotation token.
     /// Validate the returned backup bytes and choose whether to replace them before creating a backup.</summary>
     public Task<BackupPreparation> PrepareBackupAsync(string expectedGeneration, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "prepareBackup", expectedGeneration },
-            root => Wire.BackupPreparation(root, configuration.MaximumPayloadBytes), cancellationToken);
+        => ExecuteAsync(new { command = "prepareBackup", expectedGeneration }, Wire.BackupPreparation, cancellationToken);
 
     /// <summary>Creates or reuses a backup only while the prepared backup state is unchanged.
     /// Supply BackupPreparation.Token; a changed backup or wrong-purpose token fails with BackupChanged,
     /// including when the backup already has the requested generation.</summary>
     public Task<BackupSnapshot> CreateBackupAsync(string expectedGeneration, string token, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "createBackup", expectedGeneration, token }, DecodeBackup, cancellationToken);
+        => ExecuteAsync(new { command = "createBackup", expectedGeneration, token }, Wire.Backup, cancellationToken);
 
     /// <summary>Reviews complete raw primary and backup identities for an explicit rebuild.
     /// Requires the current primary generation; a stale generation fails with Conflict.
@@ -136,17 +134,17 @@ public sealed class ConfigurationStore : IDisposable
     /// raw family change, and requires a new review. This explicitly permits rebuilding an invalid
     /// backup; normal CreateBackupAsync remains conservative.</summary>
     public Task<BackupSnapshot> RebuildBackupAsync(string expectedGeneration, string token, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "rebuildBackup", expectedGeneration, token }, DecodeBackup, cancellationToken);
+        => ExecuteAsync(new { command = "rebuildBackup", expectedGeneration, token }, Wire.Backup, cancellationToken);
 
     /// <summary>Returns opaque backup bytes for host validation and a token binding the backup
     /// and current raw active selection. Re-read and validate after either changes.</summary>
     public Task<BackupSnapshot> ReadBackupAsync(CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "readBackup" }, DecodeBackup, cancellationToken);
+        => ExecuteAsync(new { command = "readBackup" }, Wire.Backup, cancellationToken);
 
     /// <summary>Rust rechecks both the backup and raw active selection represented by the
     /// validated token. Newer writes fail with BackupChanged instead of being overwritten.</summary>
     public Task<Snapshot> RestoreBackupAsync(string token, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "restoreBackup", token }, DecodeSnapshot, cancellationToken);
+        => ExecuteAsync(new { command = "restoreBackup", token }, Wire.Snapshot, cancellationToken);
 
     /// <summary>Binds the caller's opaque bytes and current raw selection for restoration.
     /// The host must validate these bytes before restoring with the returned token.</summary>
@@ -156,7 +154,7 @@ public sealed class ConfigurationStore : IDisposable
         if (payload.Length > configuration.MaximumPayloadBytes)
             return Task.FromException<string>(new StorageException(new(ErrorCode.InvalidConfiguration)));
         var copy = payload.ToArray();
-        return ExecuteAsync(new { command = "prepareRestore", payload = copy }, Wire.ReviewToken, cancellationToken);
+        return ExecuteAsync(new { command = "prepareRestore" }, Wire.ReviewToken, cancellationToken, copy);
     }
 
     /// <summary>Restores validated bytes to a fresh generation while retaining original files.
@@ -167,14 +165,11 @@ public sealed class ConfigurationStore : IDisposable
         if (payload.Length > configuration.MaximumPayloadBytes)
             return Task.FromException<Snapshot>(new StorageException(new(ErrorCode.InvalidConfiguration)));
         var copy = payload.ToArray();
-        return ExecuteAsync(new { command = "restoreSnapshot", payload = copy, token }, DecodeSnapshot, cancellationToken);
+        return ExecuteAsync(new { command = "restoreSnapshot", token }, Wire.Snapshot, cancellationToken, copy);
     }
 
-    private Snapshot DecodeSnapshot(JsonElement root) => Wire.Snapshot(root, configuration.MaximumPayloadBytes);
-
-    private BackupSnapshot DecodeBackup(JsonElement root) => Wire.Backup(root, configuration.MaximumPayloadBytes);
-
-    private async Task<T> ExecuteAsync<TCommand, T>(TCommand command, Func<JsonElement, T> decode, CancellationToken cancellationToken)
+    private async Task<T> ExecuteAsync<TCommand, T>(TCommand command, Func<JsonElement, byte[]?, T> decode,
+        CancellationToken cancellationToken, byte[]? payload = null)
     {
         await operations.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -215,7 +210,8 @@ public sealed class ConfigurationStore : IDisposable
                     }
                     // Once native work begins, preserve the first operation through admission
                     // and dispatch, including its confirmed write or real failure.
-                    return Wire.Consume(native.Dispatch(current.DangerousGetHandle(), json), native, decode);
+                    var result = native.Dispatch(current.DangerousGetHandle(), json, payload);
+                    return Wire.Consume(result, native, configuration.MaximumPayloadBytes, decode);
                 }
                 finally { if (held) current!.DangerousRelease(); }
             }).ConfigureAwait(false);

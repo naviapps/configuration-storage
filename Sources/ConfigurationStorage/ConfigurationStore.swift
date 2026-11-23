@@ -147,7 +147,7 @@ public actor ConfigurationStore {
 
   private func perform<Value: Decodable>(_ command: StorageCommand) throws -> Value {
     try Task.checkCancellation()
-    guard !command.exceedsPayloadLimit(configuration.maximumPayloadBytes) else {
+    if let payload = command.payload, payload.count > configuration.maximumPayloadBytes {
       throw ConfigurationStorageError(.invalidConfiguration)
     }
     let store: NativeStore

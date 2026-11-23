@@ -116,15 +116,17 @@ healthy copies; unchanged updates remain no-ops.
 `rawRecoveryLimitExceeded` and `ioFailure`. The facade additionally
 reports `unsupportedABIVersion` and `invalidNativeResponse` for native contract failures.
 Messages contain codes rather than payload contents; the host owns localized explanations.
-The JSON ABI omits an optional recovery location that cannot be represented as Unicode.
+The native JSON metadata omits an optional recovery location that cannot be represented as Unicode.
 It still returns the original error code and retains the raw files; it never substitutes
 a lossy path or aborts while encoding that failure.
 
 `unsupportedFormatVersion` identifies an unsupported stored SQLite format;
 `unsupportedABIVersion` identifies an incompatible native ABI before the store opens.
 .NET uses `UnsupportedFormatVersion` and `UnsupportedAbiVersion` respectively.
-Native ABI 13 applies to the store and optional save queue. Update native
-libraries and bindings together; the SQLite format remains unchanged.
+Native ABI 14 applies to the store, independent recovery-copy commands and optional save
+queue. Store and recovery requests pass payload bytes separately from JSON metadata.
+Update native libraries and bindings together. The SQLite and portable recovery-copy
+formats remain unchanged.
 
 `storeMissing` is reserved for a root absent during existing-only admission.
 It does not represent missing selected data, missing ownership or a missing lock.

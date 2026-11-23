@@ -3,7 +3,7 @@
 Opaque, transactional configuration snapshots backed by a Rust engine and a synchronous C ABI.
 The Swift product and module are `ConfigurationStorage`; its native framework is
 `CConfigurationStorage.xcframework`. Swift requires Swift 6.3 and macOS 26 or later.
-The Swift and .NET bindings require native ABI 13.
+The Swift and .NET bindings require native ABI 14.
 
 ## Documentation
 
@@ -69,6 +69,15 @@ the installed framework's parent directory. The C client does not need Rust or
 the SDK source checkout. Public C types use the full `ConfigurationStorage` prefix,
 including `ConfigurationStorageStore` and `ConfigurationStorageResultView`.
 
+Compare `configuration_storage_abi_version()` with the header version before opening a
+store. ABI 14 uses `configuration_storage_store_request` and
+`configuration_storage_recovery_copy_request` for UTF-8 JSON metadata up to 1 MiB
+and separate payload bytes. Supply `NULL, 0` for commands without input bytes. For writes,
+zero bytes represent an initialized empty payload. The borrowed result view
+`configuration_storage_result_view_v14` uses a null payload pointer for absent bytes
+and a non-null pointer with length zero for empty bytes. Copy retained data before
+destroying its result owner. Update the C header, library and bindings together.
+
 ## Install from .NET
 
 Obtain the `NaviApps.ConfigurationStorage` package for your .NET 10
@@ -89,8 +98,8 @@ multiple variants. See the [.NET API guide](https://github.com/naviapps/configur
 Rust owns file ownership, transactional writes, explicit generation conflicts, storage-format
 and integrity checks, logical backups, backup identity rechecks and non-destructive restore.
 Swift owns actor isolation, the native handle lifetime and conversion between owned native
-results and immutable Swift values. Payloads cross the JSON ABI as base64 through `Data.Codable`;
-they are never interpreted as application JSON, text or model objects.
+results and immutable Swift values. Payloads cross the C ABI as opaque bytes independently of
+JSON metadata. The SQLite storage format and portable recovery copy format remain unchanged.
 
 The host chooses the directory and owner, payload schema, semantic validation, migrations,
 editing baseline, save timing, retry/merge decisions, backup timing and recovery confirmation.

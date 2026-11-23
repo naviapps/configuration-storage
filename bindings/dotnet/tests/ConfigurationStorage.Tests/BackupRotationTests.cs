@@ -24,7 +24,7 @@ static class BackupRotationTests
             && !parameters[1].IsOptional, "An unguarded backup-creation overload remains public.");
         var configuration = new Configuration(
             Path.Combine(Path.GetTempPath(), "backup-rotation-fake-" + Guid.NewGuid()), "backup.rotation.test");
-        var fake = new FakeNative { Reply = PreparationReply(false) };
+        var fake = new FakeNative { Reply = PreparationReply(false), ReplyPayload = null };
         using (var store = await ConfigurationStore.OpenAsync(configuration, fake))
         {
             var absent = await store.PrepareBackupAsync(Generation);
@@ -38,6 +38,7 @@ static class BackupRotationTests
                     "Backup preparation changed the caller's explicit generation or request shape.");
             }
             fake.Reply = PreparationReply(true);
+            fake.ReplyPayload = [1, 2, 3];
             var present = await store.PrepareBackupAsync(Generation);
             Check(present.Token == RotationToken && present.Backup is { } backup
                 && backup.Token == RestoreToken && backup.Token != present.Token
@@ -66,7 +67,7 @@ static class BackupRotationTests
                 "{\"backup\":null,\"token\":1}", "{\"backup\":[],\"token\":\"rotation\"}",
                 "{\"backup\":" + FakeNative.Initialized + ",\"token\":\"rotation\"}",
                 "{\"backup\":" + BackupReply.Replace(RestoreToken, "") + ",\"token\":\"rotation\"}",
-                "{\"backup\":" + BackupReply.Replace(FakeNative.Initialized, "{\"generation\":null,\"payload\":null}") + ",\"token\":\"rotation\"}",
+                "{\"backup\":" + BackupReply.Replace(FakeNative.Initialized, "{\"generation\":null}") + ",\"token\":\"rotation\"}",
                 "{\"backup\":" + BackupReply.Replace("1700000000.125", "1e999") + ",\"token\":\"rotation\"}",
                 "{\"backup\":null,\"backup\":null,\"token\":\"rotation\"}",
                 "{\"backup\":null,\"token\":\"first\",\"token\":\"second\"}" })
@@ -113,6 +114,7 @@ static class BackupRotationTests
             var accepted = new FakeNative
             {
                 Reply = preparing ? PreparationReply(false) : BackupReply,
+                ReplyPayload = preparing ? null : [1, 2, 3],
                 OnDispatch = cancellation.Cancel
             };
             using var store = await ConfigurationStore.OpenAsync(configuration, accepted);
@@ -125,7 +127,7 @@ static class BackupRotationTests
             Check(accepted.ResultDestroys == 1, "Late cancellation leaked a backup preparation/rotation result.");
         }
 
-        var race = new FakeNative { Reply = PreparationReply(false) };
+        var race = new FakeNative { Reply = PreparationReply(false), ReplyPayload = null };
         using (var entered = new ManualResetEventSlim())
         using (var release = new ManualResetEventSlim())
         {

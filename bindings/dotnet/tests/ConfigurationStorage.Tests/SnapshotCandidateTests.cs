@@ -17,7 +17,7 @@ static class SnapshotCandidateTests
     internal static async Task RunManagedAsync()
     {
         var configuration = new Configuration(Path.Combine(Path.GetTempPath(), "candidate-fake-" + Guid.NewGuid()), "candidate.test", 3);
-        var fake = new FakeNative { Reply = PageReply };
+        var fake = new FakeNative { Reply = PageReply, ReplyPayload = null };
         using (var store = await ConfigurationStore.OpenAsync(configuration, fake))
         {
             var page = await store.ListSnapshotCandidatesAsync();
@@ -54,6 +54,7 @@ static class SnapshotCandidateTests
             Check((await store.ListSnapshotCandidatesAsync()).Candidates.Count == 0
                 && page.Candidates.Count == 3 && page.NextCursor == CandidateId, "Pages borrowed a later native result.");
 
+            fake.ReplyPayload = [1, 2, 3];
             foreach (var selection in new[] { "true", "false", "null" })
                 foreach (var seconds in new[] { 1700000000.125, 0, -1.25, -11644473600.0, -1e300, 1e300 })
                 {
@@ -71,7 +72,8 @@ static class SnapshotCandidateTests
                     && command.RootElement.GetProperty("command").GetString() == "readSnapshotCandidate"
                     && command.RootElement.GetProperty("id").GetString() == CandidateId,
                     "Facade parsed or changed an opaque candidate read ID.");
-            fake.Reply = ReadReply(snapshot: FakeNative.Initialized.Replace("AQID", ""));
+            fake.Reply = ReadReply();
+            fake.ReplyPayload = [];
             Check((await store.ReadSnapshotCandidateAsync(CandidateId)).Snapshot.Payload is { Length: 0 },
                 "Initialized empty candidate payload became uninitialized.");
 
@@ -90,12 +92,14 @@ static class SnapshotCandidateTests
             fake.OnDispatch = () =>
             {
                 using var command = JsonDocument.Parse(fake.CommandJson!);
-                fake.Reply = command.RootElement.GetProperty("command").GetString() switch
+                var name = command.RootElement.GetProperty("command").GetString();
+                fake.Reply = name switch
                 {
                     "listSnapshotCandidates" => PageReply,
                     "readSnapshotCandidate" => ReadReply(),
                     _ => FakeNative.Initialized
                 };
+                fake.ReplyPayload = name == "listSnapshotCandidates" ? null : [1, 2, 3];
             };
             await Task.WhenAll(Enumerable.Range(0, 8).SelectMany(_ => new Task[] {
                 store.LoadAsync(), store.ListSnapshotCandidatesAsync(), store.ReadSnapshotCandidateAsync(CandidateId) }));
@@ -107,6 +111,9 @@ static class SnapshotCandidateTests
 
     private static async Task InvalidPagesAsync(ConfigurationStore store, FakeNative fake)
     {
+        fake.Reply = PageReply;
+        await RejectAsync(store.ListSnapshotCandidatesAsync(), typeof(InvalidDataException));
+        fake.ReplyPayload = null;
         foreach (var reply in new[] {
             "null", "[]", "{}", """{"candidates":[]}""", """{"nextCursor":null}""",
             """{"candidates":null,"nextCursor":null}""", """{"candidates":{},"nextCursor":null}""",
@@ -141,6 +148,7 @@ static class SnapshotCandidateTests
 
     private static async Task InvalidReadsAsync(ConfigurationStore store, FakeNative fake)
     {
+        fake.ReplyPayload = [1, 2, 3];
         foreach (var reply in new[] {
             "null", "[]", "{}",
             ReadReply().Replace("\"id\":\"opaque-candidate\",", ""),
@@ -154,17 +162,16 @@ static class SnapshotCandidateTests
             ReadReply(modifiedAt: "null"), ReadReply(modifiedAt: "\"-1.25\""),
             ReadReply(modifiedAt: "1e999"), ReadReply(modifiedAt: "-1e999"),
             ReadReply(snapshot: "null"), ReadReply(snapshot: "{}"), ReadReply(snapshot: "[]"),
-            ReadReply(snapshot: """{"generation":null,"payload":null}"""),
-            ReadReply(snapshot: """{"generation":null,"payload":""}"""),
-            ReadReply(snapshot: """{"generation":"opaque","payload":null}"""),
-            ReadReply(snapshot: """{"generation":"opaque"}"""),
-            ReadReply(snapshot: """{"payload":"AQID"}"""),
-            ReadReply(snapshot: FakeNative.Initialized.Replace(FakeNative.Generation, "")),
-            ReadReply(snapshot: FakeNative.Initialized.Replace("AQID", "!")),
-            // The candidate decoder must also enforce this store's configured limit of three bytes.
-            ReadReply(snapshot: FakeNative.Initialized.Replace("AQID", "AQIDBA==")) })
+            ReadReply(snapshot: """{"generation":null}"""),
+            ReadReply(snapshot: FakeNative.Initialized.Replace(FakeNative.Generation, "")) })
         {
             fake.Reply = reply;
+            await RejectAsync(store.ReadSnapshotCandidateAsync(CandidateId), typeof(InvalidDataException));
+        }
+        fake.Reply = ReadReply();
+        foreach (var payload in new byte[]?[] { null, [1, 2, 3, 4] })
+        {
+            fake.ReplyPayload = payload;
             await RejectAsync(store.ReadSnapshotCandidateAsync(CandidateId), typeof(InvalidDataException));
         }
     }
@@ -173,7 +180,7 @@ static class SnapshotCandidateTests
     {
         foreach (var read in new[] { false, true })
         {
-            var fake = new FakeNative { Reply = read ? ReadReply() : PageReply };
+            var fake = new FakeNative { Reply = read ? ReadReply() : PageReply, ReplyPayload = read ? [1, 2, 3] : null };
             using var store = await ConfigurationStore.OpenAsync(configuration, fake);
             using var source = new CancellationTokenSource();
             source.Cancel();

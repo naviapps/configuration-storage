@@ -12,7 +12,7 @@ static class BackupRebuildTests
         var configuration = new Configuration(Path.Combine(Path.GetTempPath(), "backup-rebuild-fake-" + Guid.NewGuid()), "backup.rebuild.test");
         const string generation = "opaque-generation/\"\\\n";
         const string token = "opaque-review/\"\\\n";
-        var fake = new FakeNative { Reply = JsonSerializer.Serialize(token) };
+        var fake = new FakeNative { Reply = JsonSerializer.Serialize(token), ReplyPayload = null };
         using (var store = await ConfigurationStore.OpenAsync(configuration, fake))
         {
             Check(await store.PrepareBackupRebuildAsync(generation) == token, "Backup review did not decode an opaque JSON string token.");
@@ -23,6 +23,7 @@ static class BackupRebuildTests
                     && root.GetProperty("expectedGeneration").GetString() == generation, "Backup review changed the caller's generation.");
             }
             fake.Reply = BackupReply;
+            fake.ReplyPayload = [1, 2, 3];
             var rebuilt = await store.RebuildBackupAsync(generation, token);
             Check(rebuilt.Snapshot.Generation == FakeNative.Generation
                 && rebuilt.Snapshot.Payload!.SequenceEqual(new byte[] { 1, 2, 3 })
@@ -56,13 +57,15 @@ static class BackupRebuildTests
             fake.OnDispatch = () =>
             {
                 using var command = JsonDocument.Parse(fake.CommandJson!);
-                fake.Reply = command.RootElement.GetProperty("command").GetString() switch
+                var name = command.RootElement.GetProperty("command").GetString();
+                fake.Reply = name switch
                 {
                     "prepareBackupRebuild" => JsonSerializer.Serialize(token),
                     "prepareBackup" => "{\"backup\":null,\"token\":\"opaque-rotation-token\"}",
                     "load" => FakeNative.Initialized,
                     _ => BackupReply
                 };
+                fake.ReplyPayload = name is "prepareBackupRebuild" or "prepareBackup" ? null : [1, 2, 3];
             };
             await Task.WhenAll(Enumerable.Range(0, 16).SelectMany(_ => new Task[] {
                 store.PrepareBackupRebuildAsync(generation), store.RebuildBackupAsync(generation, token),
@@ -75,7 +78,12 @@ static class BackupRebuildTests
         foreach (var preparing in new[] { true, false })
         {
             using var source = new CancellationTokenSource();
-            var accepted = new FakeNative { Reply = preparing ? JsonSerializer.Serialize(token) : BackupReply, OnDispatch = source.Cancel };
+            var accepted = new FakeNative
+            {
+                Reply = preparing ? JsonSerializer.Serialize(token) : BackupReply,
+                ReplyPayload = preparing ? null : [1, 2, 3],
+                OnDispatch = source.Cancel
+            };
             using var store = await ConfigurationStore.OpenAsync(configuration, accepted);
             if (preparing) Check(await store.PrepareBackupRebuildAsync(generation, source.Token) == token, "Late cancellation discarded review completion.");
             else Check((await store.RebuildBackupAsync(generation, token, source.Token)).Snapshot.IsInitialized, "Late cancellation discarded a confirmed rebuild.");

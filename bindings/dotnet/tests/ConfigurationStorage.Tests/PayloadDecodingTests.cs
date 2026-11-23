@@ -9,42 +9,35 @@ static class PayloadDecodingTests
         var directory = Path.Combine(Path.GetTempPath(), "payload-decoding-" + Guid.NewGuid());
         var path = Path.Combine(directory, "portable.copy");
         var digest = new string('a', 64);
+        var recoveryMetadata = "{\"digest\":\"" + digest + "\",\"modifiedAt\":1.25";
         var fake = new FakeNative();
         using var store = await ConfigurationStore.OpenAsync(new(directory, "payload-test.owner"), fake);
 
-        // These are JSON string tokens, including escaped and legacy base64 forms.
-        foreach (var (token, expected) in new (string, byte[])[] {
-            ("\"/wAB\"", [255, 0, 1]),
-            ("\"\\/wAB\"", [255, 0, 1]),
-            ("\"\\u002FwAB\"", [255, 0, 1]),
-            ("\" A Q I D \\r\\n\\t\"", [1, 2, 3]),
-            ("\"YR==\"", [(byte)'a']),
-        })
+        foreach (var bytes in new byte[][] { [0, 255, 128], [] })
         {
-            fake.Reply = "{\"generation\":\"" + FakeNative.Generation + "\",\"payload\":" + token + "}";
+            fake.Reply = FakeNative.Initialized;
+            fake.ReplyPayload = bytes;
             var snapshot = await store.LoadAsync();
-            Check(snapshot.Payload!.SequenceEqual(expected), "Snapshot base64 compatibility changed.");
-            fake.Reply = RecoveryReply(token, digest);
-            var recovery = await ConfigurationRecoveryCopy.ReadAsync(path, expected.Length, fake);
-            Check(recovery.Payload.SequenceEqual(expected), "Recovery base64 compatibility or decoded-byte budget changed.");
+            Check(snapshot.Payload!.SequenceEqual(bytes), "The snapshot changed binary or empty bytes.");
+            fake.Reply = recoveryMetadata + "}";
+            var recovery = await ConfigurationRecoveryCopy.ReadAsync(path, 3, fake);
+            Check(recovery.Payload.SequenceEqual(bytes), "The recovery copy changed binary or empty bytes.");
         }
 
-        foreach (var token in new[] { "false", "0", "[]", "{}", "\"AQID!\"", "\"A===\"", "\"AQID\\u00a0\"" })
-        {
-            fake.Reply = "{\"generation\":\"" + FakeNative.Generation + "\",\"payload\":" + token + "}";
-            await RejectAsync(store.LoadAsync(), typeof(InvalidDataException));
-            fake.Reply = RecoveryReply(token, digest);
-            await RejectAsync(ConfigurationRecoveryCopy.ReadAsync(path, 3, fake), typeof(InvalidDataException));
-        }
+        fake.ReplyPayload = [1];
+        fake.Reply = recoveryMetadata + ",\"payload\":\"AQ==\"}";
+        await RejectAsync(ConfigurationRecoveryCopy.ReadAsync(path, 3, fake), typeof(InvalidDataException));
+        fake.Reply = FakeNative.Initialized[..^1] + ",\"payload\":\"AQ==\"}";
+        await RejectAsync(store.LoadAsync(), typeof(InvalidDataException));
 
-        fake.Reply = RecoveryReply("\"AAE=\"", digest);
-        await RejectAsync(ConfigurationRecoveryCopy.ReadAsync(path, 1, fake), typeof(InvalidDataException));
-
-        // A native failure remains authoritative even if an unused payload is malformed.
-        fake.ReplyCode = 1;
-        fake.Reply = "{\"code\":\"ownerMismatch\",\"payload\":false}";
-        await FailureAsync(store.LoadAsync(), ErrorCode.OwnerMismatch);
-        await FailureAsync(ConfigurationRecoveryCopy.ReadAsync(path, 3, fake), ErrorCode.OwnerMismatch);
+        fake.Reply = FakeNative.Initialized;
+        fake.RewriteView = view => new(view.Code, view.Data, view.Length, IntPtr.Zero, view.PayloadLength);
+        await RejectAsync(store.LoadAsync(), typeof(InvalidDataException));
+        fake.RewriteView = view => new(view.Code, view.Data, view.Length, view.Payload, nuint.MaxValue);
+        await RejectAsync(store.LoadAsync(), typeof(InvalidDataException));
+        fake.RewriteView = null;
+        fake.ReplyPayload = null;
+        await RejectAsync(store.LoadAsync(), typeof(InvalidDataException));
         Check(fake.ResultDestroys == fake.Dispatches + fake.RecoveryCopyDispatches,
             "Payload projection leaked or double-freed a native reply.");
 
@@ -91,7 +84,4 @@ static class PayloadDecodingTests
             Check(fake.ResultDestroys == fake.Dispatches, "Payload limit rejection leaked or double-freed a native reply.");
         }
     }
-
-    private static string RecoveryReply(string token, string digest)
-        => "{\"payload\":" + token + ",\"digest\":\"" + digest + "\",\"modifiedAt\":1.25}";
 }

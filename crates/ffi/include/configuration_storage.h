@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 // Native ABI version. The SQLite schema remains version 1.
-#define CONFIGURATION_STORAGE_ABI_VERSION 13u
+#define CONFIGURATION_STORAGE_ABI_VERSION 14u
 
 typedef struct ConfigurationStorageResult ConfigurationStorageResult;
 
@@ -20,6 +20,8 @@ typedef struct ConfigurationStorageResultView {
   uint32_t code;
   const uint8_t *data;
   size_t length;
+  const uint8_t *payload;
+  size_t payload_length;
 } ConfigurationStorageResultView;
 
 typedef struct ConfigurationStorageSaveQueueView {
@@ -56,9 +58,11 @@ struct ConfigurationStorageStore *configuration_storage_store_open_existing(cons
                                                                             size_t length,
                                                                             struct ConfigurationStorageResult **error);
 
-// Dispatches a UTF-8 JSON command. Root contention returns `busy`; a successful
-// write remains committed even if a host task cancels. `save`, `prepareRestore`
-// and `restoreSnapshot` reject oversized payloads before decoding or file I/O.
+// Dispatches UTF-8 JSON metadata (up to 1 MiB) with a separate opaque payload.
+// Omit `payload` from all JSON objects. Only `save`, `prepareRestore` and
+// `restoreSnapshot` take a payload buffer, and either pointer value with
+// length zero represents empty bytes. Other requests require null/zero.
+// Root contention returns `busy`; a committed write survives cancellation.
 //
 // `prepareBackup` with `expectedGeneration` returns the optional `backup` and its `token`.
 // Validate the exact opaque backup payload, then call `createBackup` with that
@@ -69,30 +73,39 @@ struct ConfigurationStorageStore *configuration_storage_store_open_existing(cons
 // rebuild is separate and retains old file families.
 //
 // # Safety
-// Store stays live throughout dispatch; input is readable. Separate dispatch calls may run concurrently.
-struct ConfigurationStorageResult *configuration_storage_store_dispatch(const struct ConfigurationStorageStore *store,
-                                                                        const uint8_t *data,
-                                                                        size_t length);
+// Store stays live throughout dispatch. Nonempty buffers are readable for their
+// stated lengths until the call returns. Separate calls may run concurrently.
+struct ConfigurationStorageResult *configuration_storage_store_request(const struct ConfigurationStorageStore *store,
+                                                                       const uint8_t *data,
+                                                                       size_t length,
+                                                                       const uint8_t *payload,
+                                                                       size_t payload_length);
 
 // # Safety
 // Store is null or exclusively owned with no dispatch calls remaining.
 void configuration_storage_store_destroy(struct ConfigurationStorageStore *store);
 
+// The payload pointer is null only when the result carries no payload.
+// A non-null pointer with length zero represents an initialized empty payload.
+//
 // # Safety
 // Result is null or live. Copy borrowed bytes before destroying the result.
-struct ConfigurationStorageResultView configuration_storage_result_view(const struct ConfigurationStorageResult *value);
+struct ConfigurationStorageResultView configuration_storage_result_view_v14(const struct ConfigurationStorageResult *value);
 
 // # Safety
 // Result is null or exclusively owned; all borrowed views expire.
 void configuration_storage_result_destroy(struct ConfigurationStorageResult *value);
 
 // Copies regular files independently of a store, returning an owned result.
-// Hosts validate payload semantics and choose destinations.
+// Hosts validate payload semantics and choose destinations. Read requests use
+// null/zero payload; write requests use the provided buffer, possibly empty.
 //
 // # Safety
-// Input is readable for length bytes.
-struct ConfigurationStorageResult *configuration_storage_recovery_copy_dispatch(const uint8_t *data,
-                                                                                size_t length);
+// Nonempty buffers are readable for their stated lengths until the call returns.
+struct ConfigurationStorageResult *configuration_storage_recovery_copy_request(const uint8_t *data,
+                                                                               size_t length,
+                                                                               const uint8_t *payload,
+                                                                               size_t payload_length);
 
 // Creates an independent queue for write coalescing. The caller owns snapshot
 // values, timing, file I/O, callbacks and retry policy, and chooses when to

@@ -15,7 +15,7 @@ base64 = "0.23.1"
 configuration-storage = { path = "crates/core" }
 rusqlite = { version = "0.41.1", features = ["bundled", "backup"] }
 serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["raw_value"] }
+serde_json = "1"
 sha2 = "0.11.1"
 tempfile = "3"
 uuid = { version = "1", features = ["v4"] }

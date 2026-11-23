@@ -21,10 +21,9 @@ public struct ConfigurationRecoveryCopy: Codable, Equatable, Sendable {
     let path = try NativeFilePath.local(url)
     try validateInput(maximumPayloadBytes: maximumPayloadBytes)
     return try NativeJSON.dispatch(
-      RecoveryCopyCommand(
-        command: "read", path: path, maximumPayloadBytes: maximumPayloadBytes, payload: nil),
+      RecoveryCopyCommand(command: "read", path: path, maximumPayloadBytes: maximumPayloadBytes),
       maximumPayloadBytes: maximumPayloadBytes,
-      using: configuration_storage_recovery_copy_dispatch)
+      using: configuration_storage_recovery_copy_request)
   }
 
   /// Atomically writes opaque bytes to a host-selected file outside live managed storage.
@@ -39,10 +38,9 @@ public struct ConfigurationRecoveryCopy: Codable, Equatable, Sendable {
     let path = try NativeFilePath.local(url)
     try validateInput(maximumPayloadBytes: maximumPayloadBytes, payloadBytes: payload.count)
     let _: NativeJSON.Null = try NativeJSON.dispatch(
-      RecoveryCopyCommand(
-        command: "write", path: path, maximumPayloadBytes: maximumPayloadBytes, payload: payload
-      ),
-      using: configuration_storage_recovery_copy_dispatch)
+      RecoveryCopyCommand(command: "write", path: path, maximumPayloadBytes: maximumPayloadBytes),
+      payload: payload,
+      using: configuration_storage_recovery_copy_request)
   }
 
   private static func validateInput(maximumPayloadBytes: Int, payloadBytes: Int = 0) throws {
@@ -58,12 +56,12 @@ public struct ConfigurationRecoveryCopy: Codable, Equatable, Sendable {
 
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    payload = try container.decode(Data.self, forKey: .payload)
-    guard payload.count <= NativeJSON.payloadLimit(from: decoder) else {
+    guard let bytes = try NativeJSON.decodePayload(from: container, key: .payload, decoder: decoder)
+    else {
       throw DecodingError.dataCorruptedError(
-        forKey: .payload, in: container,
-        debugDescription: "Payload exceeds the supported byte limit")
+        forKey: .payload, in: container, debugDescription: "Expected recovery payload bytes")
     }
+    payload = bytes
     digest = try container.decode(String.self, forKey: .digest)
     guard digest.utf8.count == 64,
       digest.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) })
@@ -86,5 +84,4 @@ private struct RecoveryCopyCommand: Encodable {
   let command: String
   let path: String
   let maximumPayloadBytes: Int
-  let payload: Data?
 }

@@ -1,38 +1,34 @@
-//! Admit recovery options before retaining or decoding caller payload bytes.
-use crate::{Failure, encode_response, invalid, payload};
+//! Admit recovery options before borrowing opaque bytes or touching the filesystem.
+use crate::{
+    ConfigurationStorageResult, Failure, InputPayload, encode_response, encode_with_payload,
+    invalid,
+};
 use configuration_storage::{
     read_recovery_copy, validate_recovery_copy_configuration, write_recovery_copy,
 };
-use serde::{Deserialize, Deserializer};
-use serde_json::value::RawValue;
+use serde::Deserialize;
+use serde_json::json;
 use std::path::PathBuf;
 
-// An internally tagged enum buffers its fields before selecting a variant. A struct
-// lets serde_json borrow the original payload, including its escaped spelling.
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Request<'a> {
-    command: String,
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Request {
+    command: Command,
     path: PathBuf,
-    #[serde(rename = "maximumPayloadBytes")]
-    maximum: usize,
-    #[serde(default, borrow, deserialize_with = "present_payload")]
-    payload: Option<&'a RawValue>,
+    maximum_payload_bytes: usize,
 }
 
-fn present_payload<'a, D: Deserializer<'a>>(decoder: D) -> Result<Option<&'a RawValue>, D::Error> {
-    // Preserve the difference between an absent field and an explicit JSON null.
-    <&RawValue>::deserialize(decoder).map(Some)
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum Command {
+    Read,
+    Write,
 }
 
-pub(super) fn dispatch(input: &[u8]) -> Result<Vec<u8>, Failure> {
-    dispatch_with(input, payload::decode)
-}
-
-fn dispatch_with(
+pub(super) unsafe fn dispatch(
     input: &[u8],
-    decode: impl FnOnce(&str) -> Result<Vec<u8>, Failure>,
-) -> Result<Vec<u8>, Failure> {
+    payload: InputPayload,
+) -> Result<ConfigurationStorageResult, Failure> {
     // Derived structs also accept positional arrays; commands require an object.
     if input
         .iter()
@@ -42,25 +38,26 @@ fn dispatch_with(
     {
         return Err(invalid());
     }
-    let request: Request<'_> = serde_json::from_slice(input).map_err(|_| invalid())?;
-    match request.command.as_str() {
-        "read" => {
-            if request.payload.is_some() {
-                return Err(invalid());
-            }
-            encode_response(read_recovery_copy(&request.path, request.maximum)?)
+    let Request {
+        command,
+        path,
+        maximum_payload_bytes,
+    } = serde_json::from_slice(input).map_err(|_| invalid())?;
+    match command {
+        Command::Read => {
+            payload.require_absent()?;
+            let copy = read_recovery_copy(&path, maximum_payload_bytes)?;
+            encode_with_payload(
+                json!({ "digest": copy.digest, "modifiedAt": copy.modified_at }),
+                Some(copy.payload),
+            )
         }
-        "write" => {
-            validate_recovery_copy_configuration(&request.path, request.maximum)?;
-            let payload = payload::decode_with(
-                request.payload.ok_or_else(invalid)?,
-                request.maximum,
-                decode,
-            )?;
-            write_recovery_copy(&request.path, &payload, request.maximum)?;
+        Command::Write => {
+            validate_recovery_copy_configuration(&path, maximum_payload_bytes)?;
+            let bytes = unsafe { payload.bounded(maximum_payload_bytes)? };
+            write_recovery_copy(&path, bytes, maximum_payload_bytes)?;
             encode_response(())
         }
-        _ => Err(invalid()),
     }
 }
 

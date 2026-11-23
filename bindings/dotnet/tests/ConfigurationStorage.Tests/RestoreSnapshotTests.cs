@@ -8,7 +8,7 @@ static class RestoreSnapshotTests
     {
         var configuration = new Configuration(Path.Combine(Path.GetTempPath(), "restore-fake-" + Guid.NewGuid()), "restore.test");
         const string token = "opaque-restore-token";
-        var fake = new FakeNative { Reply = JsonSerializer.Serialize(token) };
+        var fake = new FakeNative { Reply = JsonSerializer.Serialize(token), ReplyPayload = null };
         using (var store = await ConfigurationStore.OpenAsync(configuration, fake))
         {
             var payload = new byte[] { 0, 255, 1 };
@@ -22,12 +22,14 @@ static class RestoreSnapshotTests
             Check(await preparing == token, "Prepare did not decode an opaque JSON string token.");
             using (var command = JsonDocument.Parse(fake.CommandJson!))
                 Check(command.RootElement.GetProperty("command").GetString() == "prepareRestore"
-                    && command.RootElement.GetProperty("payload").GetString() == "AP8B", "Prepare did not capture caller bytes.");
+                    && !command.RootElement.TryGetProperty("payload", out _)
+                    && fake.CommandPayload!.SequenceEqual(new byte[] { 0, 255, 1 }), "Prepare did not capture caller bytes.");
 
             entered.Reset();
             release.Reset();
             payload[0] = 0;
             fake.Reply = FakeNative.Initialized;
+            fake.ReplyPayload = [1, 2, 3];
             var restoring = store.RestoreSnapshotAsync(payload, token);
             payload[0] = 99;
             try { Check(entered.Wait(TimeSpan.FromSeconds(10)), "Snapshot restore did not start."); }
@@ -35,7 +37,8 @@ static class RestoreSnapshotTests
             Check((await restoring).Generation == FakeNative.Generation, "Restore snapshot decoding changed.");
             using (var command = JsonDocument.Parse(fake.CommandJson!))
                 Check(command.RootElement.GetProperty("command").GetString() == "restoreSnapshot"
-                    && command.RootElement.GetProperty("payload").GetString() == "AP8B"
+                    && !command.RootElement.TryGetProperty("payload", out _)
+                    && fake.CommandPayload!.SequenceEqual(new byte[] { 0, 255, 1 })
                     && command.RootElement.GetProperty("token").GetString() == token, "Restore changed caller bytes or the opaque token.");
 
             fake.OnDispatch = null;
@@ -51,8 +54,9 @@ static class RestoreSnapshotTests
             fake.OnDispatch = () =>
             {
                 using var command = JsonDocument.Parse(fake.CommandJson!);
-                fake.Reply = command.RootElement.GetProperty("command").GetString() == "prepareRestore"
-                    ? JsonSerializer.Serialize(token) : FakeNative.Initialized;
+                var preparing = command.RootElement.GetProperty("command").GetString() == "prepareRestore";
+                fake.Reply = preparing ? JsonSerializer.Serialize(token) : FakeNative.Initialized;
+                fake.ReplyPayload = preparing ? null : [1, 2, 3];
             };
             await Task.WhenAll(Enumerable.Range(0, 32).SelectMany(_ => new Task[] {
                 store.PrepareRestoreAsync(payload), store.RestoreSnapshotAsync(payload, token), store.LoadAsync() }));
@@ -102,7 +106,7 @@ static class RestoreSnapshotTests
         }
         using (var source = new CancellationTokenSource())
         {
-            var accepted = new FakeNative { Reply = JsonSerializer.Serialize(token), OnDispatch = source.Cancel };
+            var accepted = new FakeNative { Reply = JsonSerializer.Serialize(token), ReplyPayload = null, OnDispatch = source.Cancel };
             using var store = await ConfigurationStore.OpenAsync(configuration, accepted);
             Check(await store.PrepareRestoreAsync(new byte[] { 1 }, source.Token) == token && accepted.ResultDestroys == 1,
                 "Late cancellation discarded an accepted restore preparation.");

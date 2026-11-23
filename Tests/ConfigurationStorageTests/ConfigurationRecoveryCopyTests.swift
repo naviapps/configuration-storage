@@ -191,9 +191,10 @@ final class ConfigurationRecoveryCopyTests: XCTestCase {
     let bytes = Data((0...255).map(UInt8.init))
     let write = Task {
       let _: NativeJSON.Null = try NativeJSON.dispatch(
-        WriteRequest(path: fixture.archive.path, payload: bytes)
-      ) { input, length in
-        let result = configuration_storage_recovery_copy_dispatch(input, length)
+        WriteRequest(path: fixture.archive.path), payload: bytes
+      ) { metadata, length, payload, payloadLength in
+        let result = configuration_storage_recovery_copy_request(
+          metadata, length, payload, payloadLength)
         // Cancel after actual native I/O, while its owned result still awaits decoding.
         withUnsafeCurrentTask { $0?.cancel() }
         return result
@@ -245,7 +246,6 @@ private struct WriteRequest: Encodable {
   let command = "write"
   let path: String
   let maximumPayloadBytes = 4096
-  let payload: Data
 }
 
 private struct RecoveryCopyFixture {

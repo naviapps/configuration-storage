@@ -6,12 +6,12 @@ static class RecoveryCopyTests
 {
     private const int Limit = ConfigurationRecoveryCopy.DefaultMaximumPayloadBytes;
     private static readonly string Digest = new('a', 64);
-    private static readonly string Reply = JsonSerializer.Serialize(new { payload = "AP8B", digest = Digest, modifiedAt = 1700000000.125 });
+    private static readonly string Reply = JsonSerializer.Serialize(new { digest = Digest, modifiedAt = 1700000000.125 });
 
     internal static async Task RunManagedAsync()
     {
         var path = Path.Combine(Path.GetTempPath(), "recovery-copy-" + Guid.NewGuid());
-        var fake = new FakeNative { Reply = Reply };
+        var fake = new FakeNative { Reply = Reply, ReplyPayload = [0, 255, 1] };
         var copy = await ConfigurationRecoveryCopy.ReadAsync(path, Limit, fake);
         Check(copy.Payload.SequenceEqual(new byte[] { 0, 255, 1 }) && copy.Digest == Digest
             && copy.ModifiedAt == 1700000000.125, "Recovery-copy bytes, digest or fractional time changed.");
@@ -30,10 +30,12 @@ static class RecoveryCopyTests
         {
             var root = command.RootElement;
             Check(root.EnumerateObject().Count() == 3 && root.GetProperty("command").GetString() == "read"
-                && root.GetProperty("path").GetString() == path && root.GetProperty("maximumPayloadBytes").GetInt32() == Limit,
+                && root.GetProperty("path").GetString() == path && root.GetProperty("maximumPayloadBytes").GetInt32() == Limit
+                && fake.RecoveryCopyCommandPayload is null,
                 "Standalone read acquired store or owner configuration.");
         }
         fake.Reply = "null";
+        fake.ReplyPayload = null;
         using (var entered = new ManualResetEventSlim())
         using (var release = new ManualResetEventSlim())
         {
@@ -46,9 +48,10 @@ static class RecoveryCopyTests
             await write;
             using var command = JsonDocument.Parse(fake.RecoveryCopyCommandJson!);
             var root = command.RootElement;
-            Check(root.EnumerateObject().Count() == 4 && root.GetProperty("command").GetString() == "write"
+            Check(root.EnumerateObject().Count() == 3 && root.GetProperty("command").GetString() == "write"
                 && root.GetProperty("path").GetString() == path && root.GetProperty("maximumPayloadBytes").GetInt32() == Limit
-                && root.GetProperty("payload").GetString() == "AP8B", "Recovery write did not capture caller bytes or wire options.");
+                && fake.RecoveryCopyCommandPayload!.SequenceEqual(new byte[] { 0, 255, 1 }),
+                "Recovery write did not capture caller bytes or wire options.");
         }
         Check(fake.Opens == 0 && fake.Dispatches == 0 && fake.StoreDestroys == 0
             && fake.AbiCalls == 2 && fake.ResultDestroys == 2, "Standalone recovery used or leaked store/result ownership.");
@@ -79,7 +82,12 @@ static class RecoveryCopyTests
             Check(beforeDispatch.RecoveryCopyDispatches == 0, "Cancellation during ABI validation reached recovery dispatch.");
 
             using var late = new CancellationTokenSource();
-            var accepted = new FakeNative { Reply = write ? "null" : Reply, OnRecoveryCopyDispatch = late.Cancel };
+            var accepted = new FakeNative
+            {
+                Reply = write ? "null" : Reply,
+                ReplyPayload = write ? null : [0, 255, 1],
+                OnRecoveryCopyDispatch = late.Cancel
+            };
             if (write) await ConfigurationRecoveryCopy.WriteAsync(path, new byte[] { 1 }, Limit, accepted, late.Token);
             else await ConfigurationRecoveryCopy.ReadAsync(path, Limit, accepted, late.Token);
             Check(accepted.ResultDestroys == 1, "Late cancellation discarded an owned recovery result.");
@@ -105,13 +113,13 @@ static class RecoveryCopyTests
         }
         await FailureAsync(ConfigurationRecoveryCopy.WriteAsync(path, new byte[] { 1, 2 }, 1, invalid), ErrorCode.InvalidConfiguration);
         Check(invalid.AbiCalls == 0, "Invalid recovery configuration or oversized input reached native code.");
-        invalid.Reply = Reply.Replace("AP8B", "");
+        invalid.Reply = Reply;
+        invalid.ReplyPayload = [];
         Check((await ConfigurationRecoveryCopy.ReadAsync(path, ConfigurationRecoveryCopy.MaximumSupportedPayloadBytes, invalid)).Payload.Length == 0,
             "The maximum supported recovery limit or an empty payload was rejected.");
 
         var malformed = new FakeNative();
-        foreach (var reply in new[] { "{", "null", "[]", "{}", Reply.Replace("AP8B", "!"),
-            Reply.Replace("\"AP8B\"", "null"), Reply.Replace(Digest, "f"), Reply.Replace(Digest, new string('g', 64)),
+        foreach (var reply in new[] { "{", "null", "[]", "{}", Reply.Replace(Digest, "f"), Reply.Replace(Digest, new string('g', 64)),
             Reply.Replace(Digest, Digest.ToUpperInvariant()),
             Reply.Replace("1700000000.125", "-1e999"), Reply.Replace("1700000000.125", "1e999"),
             Reply.Replace("1700000000.125", "null") })
@@ -121,6 +129,8 @@ static class RecoveryCopyTests
         }
         malformed.Reply = Reply;
         await RejectAsync(ConfigurationRecoveryCopy.ReadAsync(path, 1, malformed), typeof(InvalidDataException));
+        malformed.ReplyPayload = null;
+        await RejectAsync(ConfigurationRecoveryCopy.ReadAsync(path, Limit, malformed), typeof(InvalidDataException));
         foreach (var reply in new[] { "{}", "false", "\"metadata\"", "[]" })
         {
             malformed.Reply = reply;

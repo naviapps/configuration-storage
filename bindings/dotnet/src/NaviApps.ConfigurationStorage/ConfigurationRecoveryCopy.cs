@@ -46,7 +46,7 @@ public sealed class ConfigurationRecoveryCopy : IEquatable<ConfigurationRecovery
         cancellationToken.ThrowIfCancellationRequested();
         Validate(path, maximumPayloadBytes);
         return await ExecuteAsync(new { command = "read", path, maximumPayloadBytes }, native,
-            root => Wire.RecoveryCopy(root, maximumPayloadBytes), cancellationToken).ConfigureAwait(false);
+            maximumPayloadBytes, Wire.RecoveryCopy, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Captures caller bytes and atomically replaces the explicitly selected regular
@@ -62,9 +62,9 @@ public sealed class ConfigurationRecoveryCopy : IEquatable<ConfigurationRecovery
         Validate(path, maximumPayloadBytes);
         if (payload.Length > maximumPayloadBytes) throw new StorageException(new(ErrorCode.InvalidConfiguration));
         var copy = payload.ToArray();
-        await ExecuteAsync(new { command = "write", path, maximumPayloadBytes, payload = copy }, native,
-            static root => root.ValueKind == JsonValueKind.Null ? true : throw Wire.InvalidReply(),
-            cancellationToken).ConfigureAwait(false);
+        await ExecuteAsync(new { command = "write", path, maximumPayloadBytes }, native, 0,
+            static (root, bytes) => root.ValueKind == JsonValueKind.Null && bytes is null
+                ? true : throw Wire.InvalidReply(), cancellationToken, copy).ConfigureAwait(false);
     }
 
     private static void Validate(string path, int maximumPayloadBytes)
@@ -75,7 +75,8 @@ public sealed class ConfigurationRecoveryCopy : IEquatable<ConfigurationRecovery
     }
 
     private static Task<T> ExecuteAsync<TCommand, T>(TCommand command, IStorageNative native,
-        Func<JsonElement, T> decode, CancellationToken cancellationToken)
+        int maximumReplyPayloadBytes, Func<JsonElement, byte[]?, T> decode,
+        CancellationToken cancellationToken, byte[]? payload = null)
         => Task.Run(() =>
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -83,6 +84,6 @@ public sealed class ConfigurationRecoveryCopy : IEquatable<ConfigurationRecovery
             PInvokeStorageNative.ValidateAbi(native);
             cancellationToken.ThrowIfCancellationRequested();
             // Once dispatch starts, deliver its outcome even if cancellation arrives later.
-            return Wire.Consume(native.RecoveryCopyDispatch(json), native, decode);
+            return Wire.Consume(native.RecoveryCopyDispatch(json, payload), native, maximumReplyPayloadBytes, decode);
         });
 }

@@ -11,19 +11,14 @@ public struct ConfigurationSnapshot: Codable, Equatable, Sendable {
 
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    // Both keys are required even when their values are null.
+    // Standalone Codable values require both keys, even when they are null.
     generation = try container.decode(String?.self, forKey: .generation)
-    payload = try container.decode(Data?.self, forKey: .payload)
+    payload = try NativeJSON.decodePayload(from: container, key: .payload, decoder: decoder)
     guard (generation == nil) == (payload == nil), generation?.isEmpty != true else {
       throw DecodingError.dataCorruptedError(
         forKey: .generation, in: container,
         debugDescription:
           "Expected null generation and payload, or a nonempty generation with payload bytes")
-    }
-    if let payload, payload.count > NativeJSON.payloadLimit(from: decoder) {
-      throw DecodingError.dataCorruptedError(
-        forKey: .payload, in: container,
-        debugDescription: "Payload exceeds the supported byte limit")
     }
   }
 
@@ -89,6 +84,10 @@ public struct ConfigurationBackupPreparation: Codable, Equatable, Sendable {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     // An explicit null is an observed absence; a missing key is not that observation.
     backup = try container.decode(ConfigurationBackup?.self, forKey: .backup)
+    if backup == nil, NativeJSON.hasPayload(decoder) {
+      throw DecodingError.dataCorruptedError(
+        forKey: .backup, in: container, debugDescription: "An absent backup has no payload")
+    }
     token = try container.decode(String.self, forKey: .token)
     guard !token.isEmpty else {
       throw DecodingError.dataCorruptedError(

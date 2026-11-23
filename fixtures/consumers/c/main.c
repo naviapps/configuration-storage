@@ -44,15 +44,21 @@ static ConfigurationStorageStore *open_store(const char *config) {
     return store;
 }
 
-static void dispatch(ConfigurationStorageStore *store, const char *command, uint32_t code,
+static void dispatch(ConfigurationStorageStore *store, const char *command, const uint8_t *payload,
+                     size_t length, uint32_t code, const uint8_t *expected, size_t expected_length,
                      char *response) {
-    ConfigurationStorageResult *result =
-        configuration_storage_store_dispatch(store, (const uint8_t *)command, strlen(command));
+    ConfigurationStorageResult *result = configuration_storage_store_request(
+        store, (const uint8_t *)command, strlen(command), payload, length);
     assert(result != NULL);
-    ConfigurationStorageResultView view = configuration_storage_result_view(result);
+    ConfigurationStorageResultView view = configuration_storage_result_view_v14(result);
     assert(view.code == code && view.data != NULL && view.length < RESPONSE_CAPACITY);
     memcpy(response, view.data, view.length);
     response[view.length] = '\0';
+    assert(strstr(response, "\"payload\"") == NULL);
+    assert((view.payload == NULL) == (expected == NULL) && view.payload_length == expected_length);
+    if (expected_length != 0) {
+        assert(memcmp(view.payload, expected, expected_length) == 0);
+    }
     configuration_storage_result_destroy(result);
 }
 
@@ -97,14 +103,16 @@ static void generation(const char *response, char *literal) {
     literal[count] = '\0';
 }
 
-static void save(ConfigurationStorageStore *store, const char *expected, const char *base64,
-                 uint32_t code, char *response) {
+static void save(ConfigurationStorageStore *store, const char *generation, const uint8_t *payload,
+                 size_t length, uint32_t code, char *response) {
     char command[RESPONSE_CAPACITY + 128];
     int count = snprintf(command, sizeof command,
-                         "{\"command\":\"save\",\"expectedGeneration\":%s,\"payload\":\"%s\"}",
-                         expected, base64);
+                         "{\"command\":\"save\",\"expectedGeneration\":%s}", generation);
     assert(count > 0 && (size_t)count < sizeof command);
-    dispatch(store, command, code, response);
+    const uint8_t empty = 0;
+    const uint8_t *expected = payload == NULL ? &empty : payload;
+    dispatch(store, command, payload, length, code, code ? NULL : expected, code ? 0 : length,
+             response);
 }
 
 int main(int argc, char **argv) {
@@ -114,47 +122,49 @@ int main(int argc, char **argv) {
     ConfigurationStorageStore *writer = open_store(config);
     const char load[] = "{\"command\":\"load\"}";
     char response[RESPONSE_CAPACITY], first[RESPONSE_CAPACITY], latest[RESPONSE_CAPACITY];
-    dispatch(writer, load, 0, response);
+    dispatch(writer, load, NULL, 0, 0, NULL, 0, response);
     expect(response, "generation", "null");
-    expect(response, "payload", "null");
 
-    /* Opaque bytes 00 ff 80 00, then ff 00 7f 01; no text decoding. */
-    save(writer, "null", "AP+AAA==", 0, response);
-    expect(response, "payload", "\"AP+AAA==\"");
+    const uint8_t original[] = {0x00, 0xff, 0x80, 0x00};
+    const uint8_t replacement[] = {0xff, 0x00, 0x7f, 0x01};
+    const uint8_t oversized[] = {0x00, 0x01, 0x02, 0x03, 0xff};
+    save(writer, "null", NULL, 0, 0, response);
+    generation(response, first);
+    dispatch(writer, load, NULL, 0, 0, original, 0, response);
+    expect(response, "generation", first);
+    save(writer, first, original, sizeof original, 0, response);
     generation(response, first);
     ConfigurationStorageStore *reopened = open_store(config);
     free(config);
-    dispatch(reopened, load, 0, response);
+    dispatch(reopened, load, NULL, 0, 0, original, sizeof original, response);
     expect(response, "generation", first);
-    expect(response, "payload", "\"AP+AAA==\"");
 
-    save(reopened, first, "/wB/AQ==", 0, response);
-    expect(response, "payload", "\"/wB/AQ==\"");
+    save(reopened, first, replacement, sizeof replacement, 0, response);
     generation(response, latest);
     assert(strcmp(first, latest) != 0);
-    save(writer, first, "b2xk", 1, response);
+    save(writer, first, original, sizeof original, 1, response);
     expect(response, "code", "\"conflict\"");
 
     /* Five bytes exceed this handle's four-byte cap before generation or token checks. */
-    save(writer, first, "c3RhbGU=", 1, response);
+    save(writer, first, oversized, sizeof oversized, 1, response);
     expect(response, "code", "\"invalidConfiguration\"");
-    dispatch(writer, "{\"command\":\"prepareRestore\",\"payload\":\"c3RhbGU=\"}", 1, response);
+    const char prepare[] = "{\"command\":\"prepareRestore\"}";
+    dispatch(writer, prepare, oversized, sizeof oversized, 1, NULL, 0, response);
     expect(response, "code", "\"invalidConfiguration\"");
-    dispatch(writer, "[\"restoreSnapshot\",\"c3RhbGU=\",\"stale\"]", 1, response);
+    const char stale[] = "{\"command\":\"restoreSnapshot\",\"token\":\"stale\"}";
+    dispatch(writer, stale, oversized, sizeof oversized, 1, NULL, 0, response);
     expect(response, "code", "\"invalidConfiguration\"");
-    dispatch(writer, load, 0, response);
+    dispatch(writer, load, NULL, 0, 0, replacement, sizeof replacement, response);
     expect(response, "generation", latest);
-    expect(response, "payload", "\"/wB/AQ==\"");
 
-    /* JSON escaping and the legacy positional form still accept four opaque bytes. */
-    dispatch(writer, "[\"prepareRestore\",\"\\/wB/AQ==\"]", 0, response);
+    dispatch(writer, prepare, replacement, sizeof replacement, 0, NULL, 0, response);
     assert(response[0] == '"');
     char restore[RESPONSE_CAPACITY + 64];
-    int count =
-        snprintf(restore, sizeof restore, "[\"restoreSnapshot\",\"/wB/AQ==\",%s]", response);
+    int count = snprintf(restore, sizeof restore, "{\"command\":\"restoreSnapshot\",\"token\":%s}",
+                         response);
     assert(count > 0 && (size_t)count < sizeof restore);
-    dispatch(writer, restore, 0, response);
-    expect(response, "payload", "\"/wB/AQ==\"");
+    dispatch(writer, restore, replacement, sizeof replacement, 0, replacement, sizeof replacement,
+             response);
     generation(response, first);
     assert(strcmp(first, latest) != 0);
 

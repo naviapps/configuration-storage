@@ -246,8 +246,9 @@ Both explicit restore operations retain the original primary selector's raw byte
 before replacing it, including malformed selectors. Capture failure leaves the
 selection and original databases intact.
 
-This binding requires native ABI 13, which uses owned store/result handles and
-borrowed result views. The binding copies each view before releasing its result.
+This binding requires native ABI 14. Requests and results carry JSON metadata
+alongside a separate byte buffer for opaque payloads. The binding copies the
+borrowed result bytes before releasing their owner.
 An incompatible ABI produces
 `UnsupportedAbiVersion` before opening a store, creating a save queue or invoking
 the standalone recovery-copy symbol. An unsupported stored SQLite format produces

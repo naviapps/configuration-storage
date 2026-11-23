@@ -64,7 +64,6 @@ dependencies = [
 name = "configuration-storage-ffi"
 version = "0.1.0"
 dependencies = [
- "base64",
  "configuration-storage",
  "serde",
  "serde_json",

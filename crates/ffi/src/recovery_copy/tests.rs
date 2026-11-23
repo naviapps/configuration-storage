@@ -1,209 +1,85 @@
 use super::*;
-use configuration_storage::{ErrorCode, MAXIMUM_PAYLOAD_BYTES};
-use std::{fs, path::Path};
+use crate::{configuration_storage_recovery_copy_request, configuration_storage_result_view_v14};
+use configuration_storage::MAXIMUM_PAYLOAD_BYTES;
+use serde_json::Value;
+use std::{fs, path::Path, ptr};
 
-fn request(path: &Path, maximum: &str, payload: &str) -> String {
-    format!(
-        r#"{{"command":"write","path":{},"maximumPayloadBytes":{maximum},"payload":{payload}}}"#,
-        serde_json::to_string(path).unwrap()
-    )
+fn request(command: &str, path: &Path, maximum: usize) -> String {
+    json!({
+        "command": command, "path": path, "maximumPayloadBytes": maximum
+    })
+    .to_string()
 }
 
-fn no_decode(input: &str) {
-    assert_eq!(
-        dispatch_with(input.as_bytes(), |_| panic!(
-            "Rejected request reached payload decoding"
+fn call(metadata: &str, payload: Option<&[u8]>) -> (u32, Value, Option<Vec<u8>>) {
+    let (pointer, length) = payload.map_or((ptr::null(), 0), |bytes| (bytes.as_ptr(), bytes.len()));
+    let owner = unsafe {
+        Box::from_raw(configuration_storage_recovery_copy_request(
+            metadata.as_ptr(),
+            metadata.len(),
+            pointer,
+            length,
         ))
-        .unwrap_err()
-        .code,
-        ErrorCode::InvalidConfiguration
-    );
+    };
+    let view = unsafe { configuration_storage_result_view_v14(&*owner) };
+    let json = unsafe { std::slice::from_raw_parts(view.data, view.length) };
+    let output = (!view.payload.is_null())
+        .then(|| unsafe { std::slice::from_raw_parts(view.payload, view.payload_length).to_vec() });
+    assert_eq!(view.payload_length, output.as_ref().map_or(0, Vec::len));
+    (view.code, serde_json::from_slice(json).unwrap(), output)
 }
 
 #[test]
-fn invalid_options_are_rejected_before_payload_decoding_or_filesystem_access() {
-    let directory = tempfile::tempdir().unwrap();
-    let existing = directory.path().join("copy");
-    fs::write(&existing, b"retain existing bytes").unwrap();
-    let missing = directory.path().join("missing-parent/copy");
-    for path in [&existing, &missing] {
-        for maximum in [
-            "0".to_owned(),
-            "-1".to_owned(),
-            (MAXIMUM_PAYLOAD_BYTES + 1).to_string(),
-        ] {
-            no_decode(&request(path, &maximum, r#""AQID""#));
-        }
-    }
-    for path in [
-        Path::new("relative.copy"),
-        directory.path().join("../copy").as_path(),
-        directory.path().join("copy\0suffix").as_path(),
-    ] {
-        no_decode(&request(path, "3", r#""AQID""#));
-    }
-    assert_eq!(fs::read(existing).unwrap(), b"retain existing bytes");
-    assert!(!missing.parent().unwrap().exists());
-    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
-}
-
-#[test]
-fn malformed_requests_and_payload_types_never_reach_the_decoder() {
+fn invalid_requests_do_not_replace_existing_files() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("copy");
     fs::write(&path, b"retain").unwrap();
     let path_json = serde_json::to_string(&path).unwrap();
-    for input in [
-        "{".to_owned(),
-        "null".to_owned(),
-        format!(r#"["write",{path_json},1,""]"#),
+    let invalid = (1, json!({"code": "invalidConfiguration"}), None);
+    for metadata in [
+        request("write", &path, 0),
+        request("write", &path, MAXIMUM_PAYLOAD_BYTES + 1),
+        request("write", Path::new("relative.copy"), 4),
+        request("write", &directory.path().join("../copy"), 4),
+        request("write", &directory.path().join("copy\0suffix"), 4),
+        format!(r#"["write",{path_json},1]"#),
         format!(
-            r#"{{"command":{{"write":null}},"path":{path_json},"maximumPayloadBytes":1,"payload":""}}"#
-        ),
-        format!(r#"{{"command":"write","path":{path_json},"maximumPayloadBytes":1}}"#),
-        format!(
-            r#"{{"command":"read","path":{path_json},"maximumPayloadBytes":1,"payload":null}}"#
+            r#"{{"command":"write","path":{path_json},"maximumPayloadBytes":1,"payload":null}}"#
         ),
         format!(r#"{{"command":"read","path":{path_json},"maximumPayloadBytes":1,"payload":""}}"#),
         format!(
-            r#"{{"command":"write","command":"read","path":{path_json},"maximumPayloadBytes":1,"payload":""}}"#
-        ),
-        format!(
-            r#"{{"command":"write","path":{path_json},"maximumPayloadBytes":1,"payload":"","payload":""}}"#
-        ),
-        format!(
-            r#"{{"command":"write","path":{path_json},"maximumPayloadBytes":1,"payload":null,"payload":""}}"#
-        ),
-        format!(
-            r#"{{"command":"write","path":{path_json},"maximumPayloadBytes":1,"payload":"","unknown":true}}"#
+            r#"{{"command":"write","command":"read","path":{path_json},"maximumPayloadBytes":1}}"#
         ),
     ] {
-        no_decode(&input);
+        assert_eq!(call(&metadata, None), invalid, "{metadata}");
     }
-    for payload in ["null", "123", "[]", "{}", r#""\ud800""#] {
-        no_decode(&request(&path, "1", payload));
-    }
+    assert_eq!(call(&request("write", &path, 1), Some(&[0, 1])), invalid);
+    assert_eq!(call(&request("read", &path, 1), Some(&[])), invalid);
     assert_eq!(fs::read(&path).unwrap(), b"retain");
     assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
 }
 
 #[test]
-fn oversized_plain_escaped_and_padded_payloads_are_rejected_before_decoding() {
+fn recovery_copy_has_owned_raw_bytes_and_keeps_the_exact_length_boundary() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("copy");
-    fs::write(&path, b"retain").unwrap();
-    for (payload, maximum) in [
-        (format!("\"{}\"", "A".repeat(32_768)), "1"),
-        (format!("\"{}\"", r"\u0041".repeat(32_768)), "1"),
-        (r#""AAA=""#.to_owned(), "1"),
-        (r#""AAAA""#.to_owned(), "2"),
-        (r#""\u0041\u0041\u0041\u003d""#.to_owned(), "1"),
-    ] {
-        no_decode(&request(&path, maximum, &payload));
-    }
-    assert_eq!(fs::read(path).unwrap(), b"retain");
-    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
-}
-
-#[test]
-fn empty_padded_boundary_and_json_escaped_payloads_retain_their_bytes() {
-    let directory = tempfile::tempdir().unwrap();
-    let path = directory.path().join("copy");
-    for (payload, maximum, expected) in [
-        (r#""""#, "1", Vec::new()),
-        (r#""AA==""#, "1", vec![0]),
-        (r#""AAA=""#, "2", vec![0, 0]),
-        (r#""AAAA""#, "3", vec![0, 0, 0]),
-        (r#""\/w==""#, "1", vec![255]),
-        (r#""\u002f\u0077\u003d\u003d""#, "1", vec![255]),
-    ] {
-        let input = request(&path, maximum, payload);
-        assert_eq!(dispatch(input.as_bytes()).unwrap(), b"null");
-        assert_eq!(read_recovery_copy(&path, 3).unwrap().payload, expected);
-    }
-    // JSON field names, operation names and order retain their ordinary serde semantics.
-    let input = format!(
-        r#"{{"payload":"AQID","maximumPayloadBytes":3,"path":{},"comm\u0061nd":"wr\u0069te"}}"#,
-        serde_json::to_string(&path).unwrap()
-    );
-    dispatch(input.as_bytes()).unwrap();
-    assert_eq!(read_recovery_copy(&path, 3).unwrap().payload, [1, 2, 3]);
-}
-
-#[test]
-fn binding_default_limit_round_trips_and_rejects_larger_copies_without_replacement() {
-    use base64::{Engine, engine::general_purpose::STANDARD};
-
-    let directory = tempfile::tempdir().unwrap();
-    let path = directory.path().join("boundary.copy");
-    let binding_limit = 16 * 1024 * 1024;
-    let payload = vec![255; binding_limit + 1];
-    let maximum = binding_limit.to_string();
-    let boundary = STANDARD.encode(&payload[..binding_limit]);
-    let send = |input: &str| {
-        let owner = unsafe {
-            Box::from_raw(crate::configuration_storage_recovery_copy_dispatch(
-                input.as_ptr(),
-                input.len(),
-            ))
-        };
-        let response: serde_json::Value = serde_json::from_slice(&owner.bytes).unwrap();
-        (owner.code, response)
-    };
-    assert_eq!(
-        send(&request(&path, &maximum, &format!(r#""{boundary}""#))),
-        (0, serde_json::Value::Null)
-    );
-    let read = |limit| {
-        send(&format!(
-            r#"{{"command":"read","path":{},"maximumPayloadBytes":{limit}}}"#,
-            serde_json::to_string(&path).unwrap()
-        ))
-    };
-    let (status, accepted) = read(binding_limit);
-    assert_eq!(status, 0);
-    assert!(
-        accepted["payload"].as_str() == Some(boundary.as_str()),
-        "the published result must contain all admitted bytes"
-    );
-    let retained = fs::read(&path).unwrap();
-
-    let (status, error) = read(binding_limit - 1);
-    assert_eq!(status, 1);
-    assert_eq!(error["code"], "invalidRecoveryCopy");
-    assert!(fs::read(&path).unwrap() == retained);
-    let oversized = STANDARD.encode(&payload);
-    let (status, error) = send(&request(&path, &maximum, &format!(r#""{oversized}""#)));
-    assert_eq!(status, 1);
-    assert_eq!(error["code"], "invalidConfiguration");
-    assert!(fs::read(&path).unwrap() == retained);
-    let (status, reread) = read(binding_limit);
-    assert_eq!(status, 0);
-    assert!(reread == accepted);
-}
-
-#[test]
-fn base64_engine_rejects_malformed_alphabet_padding_and_trailing_bits_without_writes() {
-    let directory = tempfile::tempdir().unwrap();
-    let path = directory.path().join("copy");
-    fs::write(&path, b"retain").unwrap();
-    for payload in [
-        r#""@@@@""#,
-        r#""AA=A""#,
-        r#""A===""#,
-        r#""====""#,
-        r#""Zh==""#,
-        r#""Z""#,
-        r#""Zg""#,
-        r#""Zg=""#,
-    ] {
+    for payload in [&[][..], &[0, 127, 128, 255]] {
+        let limit = payload.len().max(1);
         assert_eq!(
-            dispatch(request(&path, "3", payload).as_bytes())
-                .unwrap_err()
-                .code,
-            ErrorCode::InvalidConfiguration
+            call(&request("write", &path, limit), Some(payload)),
+            (0, Value::Null, None)
         );
+        let (code, metadata, output) = call(&request("read", &path, limit), None);
+        assert_eq!(code, 0);
+        assert!(metadata.get("payload").is_none());
+        assert_eq!(metadata["digest"].as_str().unwrap().len(), 64);
+        assert!(metadata["modifiedAt"].as_f64().unwrap().is_finite());
+        assert_eq!(output.as_deref(), Some(payload));
     }
-    assert_eq!(fs::read(&path).unwrap(), b"retain");
-    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
+    let file = fs::read(&path).unwrap();
+    assert_eq!(
+        call(&request("read", &path, 3), None),
+        (1, json!({"code": "invalidRecoveryCopy"}), None)
+    );
+    assert_eq!(fs::read(&path).unwrap(), file);
 }

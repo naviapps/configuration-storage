@@ -141,16 +141,14 @@ final class ConfigurationStoreTests: XCTestCase {
     XCTAssertEqual(unchanged.generation, saved.generation)
   }
 
-  func testSlashHeavyOpaquePayloadWithinConfiguredLimitCanUpdateAndReopen() async throws {
+  func testOpaquePayloadAtConfiguredLimitCanUpdateAndReopen() async throws {
     let fixture = try Fixture()
     defer { fixture.remove() }
     let configuration = ConfigurationStore.Configuration(
       directory: fixture.directory, owner: "com.example.fixture",
-      maximumPayloadBytes: 64 * 1024 * 1024)
+      maximumPayloadBytes: 36 * 1024 * 1024)
     let store = ConfigurationStore(configuration: configuration)
     let original = try await store.save(expectedGeneration: nil, payload: Data([0]))
-    // Base64 is 48 MiB of slashes. Escaping each slash doubles it to the ABI's
-    // 96 MiB request limit before the JSON envelope is even included.
     let bytes = Data(repeating: 0xff, count: 36 * 1024 * 1024)
     let saved = try await store.save(expectedGeneration: original.generation, payload: bytes)
     XCTAssertNotEqual(saved.generation, original.generation)

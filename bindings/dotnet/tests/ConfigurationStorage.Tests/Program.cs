@@ -44,12 +44,15 @@ using (var store = await ConfigurationStore.OpenAsync(configuration, fake))
     await saved;
     using var command = JsonDocument.Parse(fake.CommandJson!);
     Check(command.RootElement.GetProperty("expectedGeneration").ValueKind == JsonValueKind.Null
-        && command.RootElement.GetProperty("payload").GetString() == "BAUG", "Request bytes not copied or null baseline changed.");
+        && !command.RootElement.TryGetProperty("payload", out _)
+        && fake.CommandPayload!.SequenceEqual(new byte[] { 4, 5, 6 }), "Request bytes not copied or null baseline changed.");
     fake.OnDispatch = null;
-    fake.Reply = "{\"generation\":null,\"payload\":null}";
+    fake.Reply = "{\"generation\":null}";
+    fake.ReplyPayload = null;
     snapshot = await store.LoadAsync();
     Check(!snapshot.IsInitialized && snapshot.Payload is null, "Uninitialized null/null was lost.");
-    fake.Reply = FakeNative.Initialized.Replace("AQID", "");
+    fake.Reply = FakeNative.Initialized;
+    fake.ReplyPayload = [];
     snapshot = await store.LoadAsync();
     Check(snapshot.Generation == FakeNative.Generation && snapshot.Payload is { Length: 0 }, "Initialized empty payload was lost.");
     await store.SaveAsync(snapshot.Generation, input);
@@ -57,6 +60,7 @@ using (var store = await ConfigurationStore.OpenAsync(configuration, fake))
         Check(saveCommand.RootElement.GetProperty("expectedGeneration").GetString() == FakeNative.Generation,
             "Save changed the opaque generation token.");
     fake.Reply = "{\"snapshot\":" + FakeNative.Initialized + ",\"token\":\"opaque-token\",\"modifiedAt\":1700000000.125}";
+    fake.ReplyPayload = [1, 2, 3];
     var backup = await store.ReadBackupAsync();
     Check(backup.ModifiedAt == 1700000000.125 && backup.Token == "opaque-token", "Backup identity/time framing.");
     fake.Reply = JsonSerializer.Serialize(new { backup = JsonSerializer.Deserialize<JsonElement>(fake.Reply), token = "opaque-rotation-token" });
@@ -180,8 +184,8 @@ using (var store = await ConfigurationStore.OpenAsync(configuration, errors))
         }
     }
     errors.ReplyCode = 0;
-    foreach (var malformed in new[] { "{", "null", "{}", "{\"generation\":null,\"payload\":\"\"}",
-        FakeNative.Initialized.Replace("AQID", "!"), FakeNative.Initialized.Replace(FakeNative.Generation, "") })
+    foreach (var malformed in new[] { "{", "null", "{}", "{\"generation\":null}",
+        FakeNative.Initialized.Replace(FakeNative.Generation, "") })
     {
         errors.Reply = malformed;
         await Reject(store.LoadAsync(), typeof(InvalidDataException));
@@ -204,7 +208,7 @@ using (var store = await ConfigurationStore.OpenAsync(configuration, malformedVi
 }
 Check(malformedViews.ResultDestroys == 4, "Invalid view bounds leaked native result owners.");
 
-var limits = new FakeNative { Reply = FakeNative.Initialized.Replace("AQID", "AQ==") };
+var limits = new FakeNative { ReplyPayload = [1] };
 using (var store = await ConfigurationStore.OpenAsync(configuration with { MaximumPayloadBytes = 1 }, limits))
 {
     await Failure(store.SaveAsync(null, new byte[] { 1, 2 }), ErrorCode.InvalidConfiguration);

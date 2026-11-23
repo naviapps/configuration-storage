@@ -5,15 +5,15 @@ import XCTest
 
 @MainActor
 final class NativeContractTests: XCTestCase {
-  func testCurrentHeaderAndBinaryMeetABI13Contract() throws {
-    XCTAssertEqual(NativeABI.supportedVersion, 13)
+  func testCurrentHeaderAndBinaryMeetABI14Contract() throws {
+    XCTAssertEqual(NativeABI.supportedVersion, 14)
     try NativeABI.requireCompatible()
   }
 
   func testOlderAndFutureRuntimeABIsAreRejected() {
-    for version in [UInt32(0), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14] {
+    for version in [UInt32(0), 13, 15] {
       XCTAssertThrowsError(
-        try NativeABI.requireCompatible(headerVersion: 13, runtimeVersion: { version })
+        try NativeABI.requireCompatible(headerVersion: 14, runtimeVersion: { version })
       ) { error in
         XCTAssertEqual(error as? ConfigurationStorageError, .init(.unsupportedABIVersion))
       }
@@ -21,7 +21,7 @@ final class NativeContractTests: XCTestCase {
   }
 
   func testStaleHeaderIsRejectedBeforeRuntimeEntryEvenIfItWouldMatchItsBinary() {
-    for version in [UInt32(0), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14] {
+    for version in [UInt32(0), 13, 15] {
       var calledRuntime = false
       XCTAssertThrowsError(
         try NativeABI.requireCompatible(
@@ -38,7 +38,7 @@ final class NativeContractTests: XCTestCase {
   }
 
   func testSaveQueueRejectsStaleHeaderBeforeRuntimeOrQueueCreation() {
-    for version in [UInt32(0), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14] {
+    for version in [UInt32(0), 13, 15] {
       var calledRuntime = false
       var createdQueue = false
       XCTAssertThrowsError(
@@ -62,13 +62,13 @@ final class NativeContractTests: XCTestCase {
   }
 
   func testSaveQueueRejectsRuntimeABIMismatchBeforeQueueCreation() {
-    for version in [UInt32(0), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14] {
+    for version in [UInt32(0), 13, 15] {
       var calledRuntime = false
       var createdQueue = false
       XCTAssertThrowsError(
         try SnapshotSaveQueue<Int>(
           commit: { _ in },
-          headerVersion: 13,
+          headerVersion: 14,
           runtimeVersion: {
             calledRuntime = true
             return version
@@ -90,8 +90,8 @@ final class NativeContractTests: XCTestCase {
     XCTAssertThrowsError(
       try SnapshotSaveQueue<Int>(
         commit: { _ in },
-        headerVersion: 13,
-        runtimeVersion: { 13 },
+        headerVersion: 14,
+        runtimeVersion: { 14 },
         createQueue: {
           createdQueue = true
           return nil
@@ -118,6 +118,15 @@ final class NativeContractTests: XCTestCase {
         as? [String: String])
     XCTAssertEqual(
       rebuild, ["command": "rebuildBackup", "expectedGeneration": generation, "token": token])
+  }
+
+  func testWriteCommandEncodesOnlyMetadata() throws {
+    let payload = Data([0, 255, 128])
+    let command = StorageCommand.save(expectedGeneration: "opaque", payload: payload)
+    let object = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: NativeJSON.encode(command)) as? [String: String])
+    XCTAssertEqual(object, ["command": "save", "expectedGeneration": "opaque"])
+    XCTAssertEqual(command.payload, payload)
   }
 
   func testBackupPreparationAndCommitCommandsPreserveOpaqueRotationToken() throws {
@@ -170,7 +179,7 @@ final class NativeContractTests: XCTestCase {
     let operation = Task {
       var enteredNative = false
       do {
-        let _: String = try NativeJSON.dispatch(CancellingRequest()) { _, _ in
+        let _: String = try NativeJSON.dispatch(CancellingRequest()) { _, _, _, _ in
           enteredNative = true
           return nil
         }
