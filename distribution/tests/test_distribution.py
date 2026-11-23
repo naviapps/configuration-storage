@@ -45,9 +45,11 @@ class SDKToolPolicyTests(unittest.TestCase):
         run = dotnet.run_managed
         self.assertEqual(run.call_args.args, ("dotnet", bindings.TEST_PROJECT))
         self.assertEqual(run.call_args.kwargs["nuget_config"], bindings.NUGET_CONFIG)
-        self.assertEqual(run.call_args.kwargs["arguments"], ("--native-library", library))
+        self.assertEqual(run.call_args.kwargs["arguments"], ("--native",))
         self.assertEqual(run.call_args.kwargs["runtime"], "win-x64")
-        self.assertEqual(run.call_args.kwargs["properties"], {"UseAppHost": "false"})
+        self.assertEqual(
+            run.call_args.kwargs["properties"], {"ConfigurationStorageNativeLibrary": str(library)}
+        )
 
     def test_missing_framework_fails_before_any_native_build(self):
         with tempfile.TemporaryDirectory() as directory:

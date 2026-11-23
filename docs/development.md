@@ -157,6 +157,11 @@ environment for Windows ARM64 emulation checks.
 
 ## Native rebuilds and provenance
 
+After editing the Rust FFI declarations or their documentation, run
+`mise exec -- make generate-header`. The header check compares the tracked
+file with the output of the pinned cbindgen generator. Consumers use the
+bundled header.
+
 [native.toml](../native.toml) declares the framework inputs, symbol prefix and
 minimum macOS version. The explicit `make native` target requires pinned Rust
 1.99.1, both Darwin

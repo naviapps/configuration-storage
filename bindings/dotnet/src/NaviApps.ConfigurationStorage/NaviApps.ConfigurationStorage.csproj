@@ -18,7 +18,12 @@
   <ItemGroup>
     <None Include="../../../../LICENSE" Pack="true" PackagePath="/" />
     <None Include="../../README.md" Pack="true" PackagePath="/README.md" />
-    <None Include="$(ConfigurationStorageNativeLibrary)" Condition="'$(ConfigurationStorageNativeLibrary)' != ''" Pack="true" PackagePath="runtimes/$(ConfigurationStorageRuntimeIdentifier)/native/%(Filename)%(Extension)" />
+    <None Include="$(ConfigurationStorageNativeLibrary)" Condition="'$(ConfigurationStorageNativeLibrary)' != ''"
+          CopyToOutputDirectory="Always" Pack="true"
+          PackagePath="runtimes/$(ConfigurationStorageRuntimeIdentifier)/native/%(Filename)%(Extension)">
+      <Link Condition="'$(OS)' == 'Windows_NT'">configuration_storage.dll</Link>
+      <Link Condition="'$(OS)' != 'Windows_NT'">libconfiguration_storage.dylib</Link>
+    </None>
     <None Include="../../../../ThirdParty/**/*" Exclude="../../../../ThirdParty/**/.DS_Store;../../../../ThirdParty/**/registry-notices.json" Pack="true" PackagePath="licenses/" />
   </ItemGroup>
   <Target Name="RequireConfigurationStorageNativeAsset" BeforeTargets="GenerateNuspec">

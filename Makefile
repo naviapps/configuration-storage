@@ -2,9 +2,11 @@ CARGO ?= cargo
 SWIFT ?= swift
 SDK_TOOLING ?= mise run sdk-tooling --
 SWIFT_FLAGS := -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+CBINDGEN := cbindgen --config crates/ffi/cbindgen.toml crates/ffi/src/lib.rs
+C_HEADER := crates/ffi/include/configuration_storage.h
 
 .DEFAULT_GOAL := check
-.PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings docs clean
+.PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify check-header generate-header lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings docs clean
 
 help:
 	@echo 'check          Source lint, Rust/Swift/managed tests and external Swift consumer (default)'
@@ -27,7 +29,7 @@ help:
 # Verification consumes the parent's artifact; it never builds one implicitly.
 check: check-source test test-consumer
 
-check-source: lint lint-rust test-rust test-managed
+check-source: lint check-header lint-rust test-rust test-managed
 
 check-distribution: native-verify test-distribution-tools test-bindings test-installed-consumers
 
@@ -43,11 +45,17 @@ check-swift:
 # Uses the existing artifact; native rebuilds and Windows acceptance belong to the parent.
 acceptance: check check-distribution
 
-native:
+native: check-header
 	$(SDK_TOOLING) xcframework
 
-native-verify:
+native-verify: check-header
 	$(SDK_TOOLING) xcframework --verify
+
+check-header:
+	bash -o pipefail -c '$(CBINDGEN) | diff -u "$(C_HEADER)" -'
+
+generate-header:
+	$(CBINDGEN) --output "$(C_HEADER)"
 
 lint:
 	$(SDK_TOOLING) quality check --dotnet

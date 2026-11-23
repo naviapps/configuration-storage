@@ -21,6 +21,9 @@ pub struct ConfigurationStorageResultView {
     pub data: *const u8,
     pub length: usize,
 }
+/// Native ABI version. The SQLite schema remains version 1.
+pub const CONFIGURATION_STORAGE_ABI_VERSION: u32 = 13u32;
+
 const MAX_BYTES: usize = 96 * 1024 * 1024;
 fn invalid() -> Failure {
     Failure::new(ErrorCode::InvalidConfiguration)
@@ -54,8 +57,11 @@ fn result(response: Result<Vec<u8>, Failure>) -> *mut ConfigurationStorageResult
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn configuration_storage_abi_version() -> u32 {
-    13
+    CONFIGURATION_STORAGE_ABI_VERSION
 }
+/// Opens a store from bounded UTF-8 JSON, creating it if needed. Both open
+/// functions perform disk I/O; schedule them away from the UI executor.
+///
 /// # Safety
 /// Input is readable for length bytes; error is null or writable for one owned result.
 #[unsafe(no_mangle)]
@@ -66,6 +72,10 @@ pub unsafe extern "C" fn configuration_storage_store_open(
 ) -> *mut ConfigurationStorageStore {
     unsafe { open_store(data, length, error, ConfigurationStore::open) }
 }
+/// Opens an existing store with the same configuration and ownership contract.
+/// Does not create or claim a store or create a lock for the returned handle.
+/// Only an absent root yields `storeMissing`. Validate snapshots separately.
+///
 /// # Safety
 /// Input is readable for length bytes; error is null or writable for one owned result.
 #[unsafe(no_mangle)]
@@ -140,6 +150,18 @@ enum Command {
         token: String,
     },
 }
+/// Dispatches a UTF-8 JSON command. Root contention returns `busy`; a successful
+/// write remains committed even if a host task cancels. `save`, `prepareRestore`
+/// and `restoreSnapshot` reject oversized payloads before decoding or file I/O.
+///
+/// `prepareBackup` with `expectedGeneration` returns the optional `backup` and its `token`.
+/// Validate the exact opaque backup payload, then call `createBackup` with that
+/// token and generation. A token is required even for an absent backup or a
+/// same-generation no-op. A changed primary or backup raw revision returns
+/// `backupChanged` before replacement. Native link, type and limit checks still
+/// apply. Preparation tokens do not authorize restore or rebuild. Explicit
+/// rebuild is separate and retains old file families.
+///
 /// # Safety
 /// Store stays live throughout dispatch; input is readable. Separate dispatch calls may run concurrently.
 #[unsafe(no_mangle)]
@@ -199,7 +221,7 @@ pub unsafe extern "C" fn configuration_storage_store_destroy(
     }
 }
 /// # Safety
-/// Result is null or live; borrowed bytes expire at destruction.
+/// Result is null or live. Copy borrowed bytes before destroying the result.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn configuration_storage_result_view(
     value: *const ConfigurationStorageResult,
@@ -228,9 +250,11 @@ pub unsafe extern "C" fn configuration_storage_result_destroy(
     }
 }
 
+/// Copies regular files independently of a store, returning an owned result.
+/// Hosts validate payload semantics and choose destinations.
+///
 /// # Safety
-/// Input is readable for length bytes. This performs independent regular-file I/O;
-/// no store is opened. Hosts validate payload semantics and choose destinations.
+/// Input is readable for length bytes.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn configuration_storage_recovery_copy_dispatch(
     data: *const u8,

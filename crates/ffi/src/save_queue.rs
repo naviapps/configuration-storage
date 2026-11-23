@@ -14,6 +14,9 @@ pub struct ConfigurationStorageSaveQueueView {
     pub has_unsaved_changes: u32,
 }
 
+/// Creates an independent queue for write coalescing. The caller owns snapshot
+/// values, timing, file I/O, callbacks and retry policy, and chooses when to
+/// start a write.
 #[unsafe(no_mangle)]
 pub extern "C" fn configuration_storage_save_queue_create() -> *mut ConfigurationStorageSaveQueue {
     Box::into_raw(Box::new(ConfigurationStorageSaveQueue(Mutex::new(
@@ -33,7 +36,7 @@ pub unsafe extern "C" fn configuration_storage_save_queue_enqueue(
 }
 
 /// # Safety
-/// Owner stays live. Zero means no claim; no write is cancelled or implicitly retried.
+/// Owner stays live. Zero means there is no pending claim or a write is in flight.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn configuration_storage_save_queue_begin(
     owner: *const ConfigurationStorageSaveQueue,
@@ -46,6 +49,7 @@ pub unsafe extern "C" fn configuration_storage_save_queue_begin(
 /// # Safety
 /// Owner stays live. succeeded is 0/1. Result: 0 invalid, 1 committed,
 /// 2 current failure retained, 3 older failure superseded by a pending edit.
+/// Invalid input does not advance the queue.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn configuration_storage_save_queue_complete(
     owner: *const ConfigurationStorageSaveQueue,

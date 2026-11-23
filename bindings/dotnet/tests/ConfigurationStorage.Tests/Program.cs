@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using NaviApps.ConfigurationStorage;
 using static TestAssertions;
@@ -234,9 +233,7 @@ await SnapshotCandidateTests.RunManagedAsync();
 
 if (args.Length != 0)
 {
-    Check(args.Length == 2 && args[0] == "--native-library" && Path.IsPathFullyQualified(args[1]), "Pass an explicit parent-built native library path.");
-    var library = NativeLibrary.Load(args[1]);
-    NativeLibrary.SetDllImportResolver(typeof(ConfigurationStore).Assembly, (name, _, _) => name == "configuration_storage" ? library : IntPtr.Zero);
+    Check(args.Length == 1 && args[0] == "--native", "Pass --native to test the native library copied to the build output.");
     await OpenExistingTests.RunNativeAsync();
     await LazyOpenTests.RunNativeAsync();
     await SnapshotSaveQueueTests.RunAsync();
@@ -287,7 +284,6 @@ if (args.Length != 0)
         await Failure(ConfigurationStore.OpenAsync(configuration with { Owner = "different-owner" }), ErrorCode.OwnerMismatch);
     }
     finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
-    // Keep the module loaded: P/Invoke stubs retain their resolved function pointers.
     Console.WriteLine("Native disposable-directory snapshot/conflict/backup/restore/owner checks passed.");
 }
 Console.WriteLine("Managed serialization, copy ownership, ABI failures, cancellation and disposal checks passed.");

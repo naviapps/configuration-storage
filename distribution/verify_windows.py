@@ -12,12 +12,11 @@ import tomllib
 from pathlib import Path
 
 from sdk_tooling.adapters import git, load
+from sdk_tooling.windows_delivery import RID, TARGET, X64Acceptance
 
 from distribution import verify_bindings as bindings
 
 ROOT = Path(__file__).resolve().parents[1]
-TARGET = "x86_64-pc-windows-msvc"
-RID = "win-x64"
 RECEIPT = "configuration-storage-windows.json"
 
 
@@ -119,24 +118,14 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args(argv)
     windows, artifacts, c_compiler = (load(name) for name in ("windows", "artifacts", "c_compiler"))
-    environment = {
-        key.upper(): value for key, value in os.environ.items() if key.upper() != "DOTNET_HOST_PATH"
-    }
     output = ROOT / "build/windows"
-    artifact_root = load("vm_environment").artifacts_dir(environment) or output
-    dotnet_path = Path(environment.get("DOTNET_BIN", ""))
+    artifact_root = load("vm_environment").artifacts_dir() or output
+    dotnet_path = Path(os.environ.get("DOTNET_BIN", ""))
     if not dotnet_path.is_absolute() or not dotnet_path.is_file():
         raise ValueError("Set DOTNET_BIN to the absolute path of the pinned x64 .NET SDK")
     windows.require_pe_machine(dotnet_path, "x64")
-    host = windows.host_architecture()
-    env, tools, dotnet = windows.native_environment(host, environment, target_architecture="x64")
-    env["RUSTUP_AUTO_INSTALL"] = "0"
-    pinned_dotnet = tomllib.loads((ROOT / "mise.toml").read_text())["tools"]["dotnet"]
-    dotnet_version = subprocess.check_output(
-        [dotnet, "--version"], cwd=ROOT, env=env, text=True
-    ).strip()
-    if dotnet_version != pinned_dotnet:
-        raise ValueError("Use the pinned x64 .NET SDK from mise.toml")
+    acceptance = X64Acceptance(ROOT)
+    host, env, tools, dotnet = acceptance.host, acceptance.env, acceptance.tools, acceptance.dotnet
     pinned_rust = tomllib.loads((ROOT / "rust-toolchain.toml").read_text())["toolchain"]["channel"]
     compiler_info = subprocess.check_output(
         ["rustc", "--version", "--verbose"], cwd=ROOT, env=env, text=True
@@ -252,7 +241,7 @@ def main(argv=None):
             "runtime": RID,
             "hostArchitecture": host,
             "executionMode": "x64-emulation" if host == "arm64" else "native",
-            "dotnetVersion": dotnet_version,
+            "dotnetVersion": acceptance.dotnet_version,
             "compiler": compiler,
             "inputs": before[1],
             "exports": sorted(exports),

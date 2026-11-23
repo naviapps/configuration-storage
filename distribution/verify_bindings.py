@@ -81,17 +81,16 @@ def source_inputs(artifacts):
     return artifacts.hashes(paths, ROOT) | support_inputs(ROOT)
 
 
-def managed_tests(dotnet, env, library=None, *, runtime=None):
-    arguments = ("--native-library", library) if library else ()
+def managed_tests(dotnet, env, library, *, runtime=None):
     load("dotnet").run_managed(
         dotnet,
         TEST_PROJECT,
         env=env,
         cwd=ROOT,
         nuget_config=NUGET_CONFIG,
-        arguments=arguments,
+        arguments=("--native",),
         runtime=runtime,
-        properties={"UseAppHost": "false"} if runtime else None,
+        properties={"ConfigurationStorageNativeLibrary": str(library)},
         verify_style=True,
     )
 

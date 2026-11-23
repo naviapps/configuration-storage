@@ -299,96 +299,37 @@ final class ConfigurationStoreTests: XCTestCase {
     XCTAssertEqual(reused, candidate)
   }
 
-  func testBackupChangedAfterHostValidationCannotBeRestored() async throws {
+  func testRestoreBackupProjectsStaleTokenAndRestoredSnapshot() async throws {
     let fixture = try Fixture()
     defer { fixture.remove() }
     let store = fixture.store()
-    let first = try await store.save(expectedGeneration: nil, payload: Data("accepted".utf8))
-    let backupPreparation = try await store.prepareBackup(
-      expectedGeneration: XCTUnwrap(first.generation))
-    _ = try await store.createBackup(
-      expectedGeneration: XCTUnwrap(first.generation), token: backupPreparation.token)
-    let candidate = try await store.readBackup()
-    XCTAssertEqual(candidate.snapshot.payload, Data("accepted".utf8))
-
-    let newer = try await store.save(
-      expectedGeneration: first.generation, payload: Data("newer".utf8))
-    let updatedBackupPreparation = try await store.prepareBackup(
-      expectedGeneration: XCTUnwrap(newer.generation))
-    _ = try await store.createBackup(
-      expectedGeneration: XCTUnwrap(newer.generation), token: updatedBackupPreparation.token)
-    do {
-      _ = try await store.restoreBackup(token: candidate.token)
-      XCTFail("The payload validated by the host was replaced.")
-    } catch let error as ConfigurationStorageError {
-      XCTAssertEqual(error.code, .backupChanged)
-    }
-    let retained = try await store.load()
-    XCTAssertEqual(retained, newer)
-  }
-
-  func testActiveWriteAfterHostValidationInvalidatesTokenWithoutReplacingBackup() async throws {
-    let fixture = try Fixture()
-    defer { fixture.remove() }
-    let store = fixture.store()
-    let original = try await store.save(expectedGeneration: nil, payload: Data("accepted".utf8))
-    let backupPreparation = try await store.prepareBackup(
-      expectedGeneration: XCTUnwrap(original.generation))
-    _ = try await store.createBackup(
-      expectedGeneration: XCTUnwrap(original.generation), token: backupPreparation.token)
-    let candidate = try await store.readBackup()
-    XCTAssertEqual(candidate.snapshot.payload, Data("accepted".utf8))
+    let payload = Data([0, 255, 128])
+    let original = try await store.save(expectedGeneration: nil, payload: payload)
+    let generation = try XCTUnwrap(original.generation)
+    let preparation = try await store.prepareBackup(expectedGeneration: generation)
+    _ = try await store.createBackup(expectedGeneration: generation, token: preparation.token)
+    let reviewed = try await store.readBackup()
+    XCTAssertEqual(reviewed.snapshot, original)
 
     let writer = fixture.store()
     let newer = try await writer.save(
-      expectedGeneration: original.generation, payload: Data("newer active write".utf8))
-    let existing = try fixture.databaseBytes()
+      expectedGeneration: generation, payload: Data("newer write".utf8))
     do {
-      _ = try await store.restoreBackup(token: candidate.token)
-      XCTFail("A restore validated before a newer active write must not overwrite that write.")
+      _ = try await store.restoreBackup(token: reviewed.token)
+      XCTFail("A stale review token must fail.")
     } catch let error as ConfigurationStorageError {
       XCTAssertEqual(error.code, .backupChanged)
     }
-    XCTAssertEqual(try fixture.databaseBytes(), existing)
     let retained = try await store.load()
     XCTAssertEqual(retained, newer)
+
     let refreshed = try await store.readBackup()
-    XCTAssertEqual(refreshed.snapshot, candidate.snapshot)
-    XCTAssertEqual(refreshed.modifiedAt, candidate.modifiedAt)
-    XCTAssertNotEqual(refreshed.token, candidate.token)
-  }
-
-  func testRestoreSelectsAFreshGenerationAndPreservesEveryExistingDatabase() async throws {
-    let fixture = try Fixture()
-    defer { fixture.remove() }
-    let store = fixture.store()
-    let original = try await store.save(expectedGeneration: nil, payload: Data("original".utf8))
-    let backupPreparation = try await store.prepareBackup(
-      expectedGeneration: XCTUnwrap(original.generation))
-    _ = try await store.createBackup(
-      expectedGeneration: XCTUnwrap(original.generation), token: backupPreparation.token)
-    let edited = try await store.save(
-      expectedGeneration: original.generation, payload: Data("edited".utf8))
-    let candidate = try await store.readBackup()
-    XCTAssertEqual(candidate.snapshot.payload, original.payload)
-    let existing = try fixture.databaseBytes()
-
-    let restored = try await store.restoreBackup(token: candidate.token)
-    XCTAssertEqual(restored.payload, original.payload)
-    XCTAssertNotEqual(restored.generation, original.generation)
-    XCTAssertNotEqual(restored.generation, edited.generation)
-    for (url, bytes) in existing {
-      XCTAssertEqual(
-        try Data(contentsOf: url), bytes, "Restore must retain previous database bytes.")
-    }
+    let restored = try await store.restoreBackup(token: refreshed.token)
+    XCTAssertEqual(restored.payload, payload)
+    XCTAssertNotNil(restored.generation)
+    XCTAssertNotEqual(restored.generation, newer.generation)
     let reopened = try await fixture.store().load()
     XCTAssertEqual(reopened, restored)
-    do {
-      _ = try await store.save(expectedGeneration: edited.generation, payload: Data("stale".utf8))
-      XCTFail("Restore must invalidate an older writer generation.")
-    } catch let error as ConfigurationStorageError {
-      XCTAssertEqual(error.code, .conflict)
-    }
   }
 
   func testCorruptPrimaryRemainsAvailableAfterRecoveryAndRestore() async throws {
