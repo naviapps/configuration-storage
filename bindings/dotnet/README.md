@@ -261,22 +261,20 @@ Native loader exceptions retain their standard .NET types.
 
 ## Development and validation
 
-Run maintainer commands from the SDK repository root after the
-[developer setup](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md#setup-and-source-layout).
-Validation uses disposable directories only. Set `DOTNET_BIN` to a provisioned
-.NET 10 executable and run:
+After [developer setup](../../docs/development.md#setup-and-source-layout), run
+the managed fixture from the SDK repository root using the pinned .NET SDK:
 
 ```sh
-mise exec -- python3 tools/bindings.py --managed-only
-mise exec -- python3 -B -m unittest discover -s tools/tests -v
+mise exec -- make test-managed
 ```
 
 Managed acceptance checks the binding contract with fake-native responses,
 including ownership, framing, limits, ABI rejection, cancellation, serialization
 and disposal. It requires no native artifact.
 
-For macOS native C/.NET acceptance and a fresh local NuGet consumer, run
-`mise exec -- make test-bindings`. It verifies and consumes the existing
+For macOS native C/.NET acceptance and a fresh local NuGet consumer, prepare the
+[pinned SDK Tooling checkout](../../docs/development.md#maintainer-distribution-checks)
+and run `mise exec -- make test-bindings`. It verifies and consumes the existing
 `Artifacts/CConfigurationStorage.xcframework` without rebuilding it.
 `tools/bindings.py --c-only` and `--dotnet-only` select subsets after native
 verification. Runtime cases cover opaque bytes, generation conflicts, reviewed
@@ -292,9 +290,11 @@ the native host architecture. On ARM64 this requires ARM64-hosted MSVC with
 x64 target components and Windows x64 emulation to execute the resulting tests.
 Set `DOTNET_BIN` to the absolute path of the x64 .NET SDK 10.0.403 executable.
 
-From the SDK root, run the repository's acceptance driver.
+From the SDK root, provide the same pinned SDK Tooling checkout and run the
+repository's acceptance driver.
 
 ```powershell
+$env:NAVI_SDK_TOOLING_SOURCE = 'C:\source\sdk-tooling'
 $env:DOTNET_BIN = 'C:\Program Files\dotnet\x64\dotnet.exe'
 python -E -S -B tools/windows.py
 ```

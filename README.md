@@ -175,13 +175,11 @@ in the host application. Ordinary consumers need only `ConfigurationStorage`.
 
 ## Development
 
-The checkout includes its source-matched native framework. Developer checks verify
-that artifact and never rebuild it implicitly. After preparing the pinned tools,
-use `mise exec -- make docs` to validate the Swift guide and
-`mise exec -- make check` for source lint, Rust Clippy and workspace tests, native
-verification, tool tests, Swift tests and the external SwiftPM consumer.
-See [Development](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md) for prerequisites and focused checks.
-Ordinary SDK consumers do not need the developer tooling or Rust.
+Run `mise exec -- make check` for source lint, Rust Clippy and workspace tests,
+.NET binding tests, strict Swift tests and the standalone SwiftPM consumer. The
+Swift checks use the tracked native framework. See the
+[development guide](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md)
+for setup, focused checks and maintainer distribution validation.
 
 ## License
 

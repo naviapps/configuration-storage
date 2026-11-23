@@ -1,7 +1,6 @@
 # Development
 
-Run commands from the repository root. This guide covers maintainer checks against
-owned temporary stores; it does not run an application against live configuration data.
+Run commands from the repository root. The tests use owned temporary stores.
 For SDK installation and explicit writes, see the [overview](../README.md).
 
 ## Setup and source layout
@@ -17,13 +16,13 @@ export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 mise trust mise.toml
 mise install
 mise exec -- cargo fetch --locked
-mise exec -- make docs
+mise exec -- make check
 ```
 
 Adjust `DEVELOPER_DIR` to the installed Xcode; no global Xcode selection is needed.
 The fetch prepares the workspace dependency cache for the locked offline Rust checks.
-Developer entry points in `tools/` use code included in this checkout. Ordinary
-SwiftPM and NuGet consumers need none of this setup.
+Contributor checks run from this checkout using the pinned tools and the tracked
+framework. SwiftPM and NuGet installation use the distributed SDK.
 
 Swift sources and tests live in `Sources/` and `Tests/`; the public Swift guide is
 in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live in
@@ -37,30 +36,31 @@ in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live i
 `make help` lists the available targets; the default `make` runs `make check`.
 Run Make targets through `mise exec --` so their recipes use the pinned tools.
 
-| Command                         | Coverage                                                                                            | Executes tests |
-| ------------------------------- | --------------------------------------------------------------------------------------------------- | -------------- |
-| `make lint`                     | Owned source format/lint, workflow checks and managed whitespace                                    | No             |
-| `make lint-rust`                | Rust workspace Clippy, locked/offline                                                               | No             |
-| `make native-verify`            | Source/artifact receipt, notices, exports and platform verification                                 | No             |
-| `make check-rust`               | Rust workspace library and test compilation, locked/offline                                         | No             |
-| `make check-swift`              | Native verification and strict Swift library/test compilation                                       | No             |
-| `make check-fast`               | Owned source lint and both Rust/Swift compilation checks                                            | No             |
-| `make check`                    | Source lint, Rust Clippy/tests, native verification, tool/Swift tests and external SwiftPM consumer | Yes            |
-| `make check-distribution`       | Source lint, Rust/tool tests, native verification, C/.NET/NuGet checks and installed Rust/C clients | Yes            |
-| `make test-rust`                | Rust workspace tests and doctests, locked/offline                                                   | Yes            |
-| `make test`                     | Native verification and strict Swift tests                                                          | Yes            |
-| `make test-consumer`            | Native verification and a clean external SwiftPM public-API consumer                                | Yes            |
-| `make test-c`                   | Native verification and disposable-store C ABI consumer                                             | Yes            |
-| `make test-bindings`            | Native verification, C/.NET tests and clean local NuGet consumer                                    | Yes            |
-| `make test-tools`               | SDK build/fixture policy tests                                                                      | Yes            |
-| `make docs`                     | Swift public-symbol compilation and DocC conversion with warnings as errors                         | No             |
-| `make test-installed-consumers` | Independent Git Rust and installed C clients using fresh consumer directories                       | Yes            |
-| `make acceptance`               | `check` and `check-distribution`                                                                    | Yes            |
+| Command                         | Coverage                                                                                                | Executes tests |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------- |
+| `make lint`                     | Owned source format/lint, workflow checks and managed whitespace                                        | No             |
+| `make lint-rust`                | Rust workspace Clippy, locked/offline                                                                   | No             |
+| `make native-verify`            | Source/artifact receipt, notices, exports and platform verification                                     | No             |
+| `make check-rust`               | Rust workspace library and test compilation, locked/offline                                             | No             |
+| `make check-swift`              | Strict Swift library and test compilation against the tracked framework                                 | No             |
+| `make check-fast`               | Owned source lint and both Rust/Swift compilation checks                                                | No             |
+| `make check`                    | Source lint, Rust Clippy and tests, .NET binding tests, Swift tests and the standalone SwiftPM consumer | Yes            |
+| `make check-distribution`       | Source lint, Rust/tool tests, native verification, C/.NET/NuGet checks and installed Rust/C clients     | Yes            |
+| `make test-rust`                | Rust workspace tests and doctests, locked/offline                                                       | Yes            |
+| `make test-managed`             | .NET binding tests with fake-native responses                                                           | Yes            |
+| `make test`                     | Strict Swift tests against the tracked framework                                                        | Yes            |
+| `make test-consumer`            | Standalone SwiftPM public-API consumer                                                                  | Yes            |
+| `make test-c`                   | Native verification and disposable-store C ABI consumer                                                 | Yes            |
+| `make test-bindings`            | Native verification, C/.NET tests and clean local NuGet consumer                                        | Yes            |
+| `make test-tools`               | SDK build/fixture policy tests                                                                          | Yes            |
+| `make docs`                     | Swift public-symbol compilation and DocC conversion with warnings as errors                             | No             |
+| `make test-installed-consumers` | Independent Git Rust and installed C clients using fresh consumer directories                           | Yes            |
+| `make acceptance`               | `check` and `check-distribution`                                                                        | Yes            |
 
 Use the compilation checks while editing and the relevant test command before
 handoff. Compilation success does not validate storage behavior, ownership,
 recovery or cancellation. `make acceptance` is the full local macOS acceptance
-path against the existing source-matched framework. It requires the pinned tools,
+path against the existing source-matched framework. It requires [SDK Tooling](#maintainer-distribution-checks), the pinned tools,
 provisioned offline Cargo dependencies for the workspace, Xcode and .NET 10.
 The independent Rust client also needs access to the public registry to populate
 its fresh cache. Native rebuilds, Windows acceptance, host application/device
@@ -79,15 +79,14 @@ and byte-for-byte preservation across rejections at the binding default limit.
 Swift and .NET each exercise the 16 MiB default through their public APIs and check
 that native integrity failures surface as typed errors.
 
-`make lint` (also `mise run lint`) checks owned source and managed whitespace;
-`mise run format` formats owned source. Compiler and native acceptance remain
-in their explicit targets. Static checks select source files using Git and exclude
-vendored code, native artifacts and original notices. `make docs` checks DocC Markdown.
+`make lint` (also `mise run lint`) checks owned source and managed whitespace.
+`mise run format` formats owned source. Static checks select source files using
+Git and exclude native artifacts and original notices.
 
 `make test` uses complete concurrency checks and warnings as errors against
-UUID-owned temporary stores. Swift and binding targets verify the source-matched
-native receipt before execution; Rust-only checks need no framework. No check
-rebuilds a native artifact implicitly.
+UUID-owned temporary stores. Distribution checks verify the native receipt
+against the source before testing the package. Rebuilding the framework requires
+the explicit `make native` command.
 
 `PYTHON`, `CARGO` and `SWIFT` accept executable paths, for example
 `mise exec -- make check PYTHON=/path/to/python3`; `DOTNET_BIN` selects .NET for
@@ -100,7 +99,7 @@ and the native builder. Reuse `target/` and `.build/` between edits;
 
 `make test-consumer` runs `fixtures/swift-consumer` against a fresh copy of the
 installable SDK, checking opaque-byte round trips and stale-generation rejection
-through the public product. `make test-installed-consumers` runs the independent
+through the public product. The maintainer target `make test-installed-consumers` runs the independent
 Rust Git and installed C fixtures from a clean committed macOS checkout. Both
 check opaque bytes and generation conflicts in temporary stores. The Rust fixture
 resolves a new lock at the exact SDK commit and needs registry access to populate
@@ -123,15 +122,36 @@ the isolated Rust and C fixture results.
 
 The [macOS workflow](../.github/workflows/check-macos.yml) runs strict Swift
 tests and the standalone SwiftPM consumer on macOS 26 with Xcode 26.6 and on
-macOS 27 with Xcode 27.2. The SDK distribution checks run once with Xcode 27.2. The
-[Windows workflow](../.github/workflows/check-windows.yml) uses GitHub's Windows
-x64 runner. CI verifies native receipts and standalone Swift, Rust, C and .NET
-consumers, including a locally built `win-x64` NuGet package. Use an owned
-environment for additional macOS runtime-version or Windows ARM64 emulation
-checks.
+macOS 27 with Xcode 27.2. It also runs source lint, Rust checks and .NET binding
+tests on macOS 27. The
+[Windows workflow](../.github/workflows/check-windows.yml) runs Rust and .NET
+SDK tests on Windows x64.
+
+## Maintainer distribution checks
+
+Set `NAVI_SDK_TOOLING_SOURCE` to the absolute path of a clean SDK Tooling
+checkout at the commit recorded in
+[`tools/tooling-sources.json`](../tools/tooling-sources.json). This enables
+`make check-distribution`, `make native`, `make native-verify`, `make docs`,
+and the C, .NET package, tooling policy and installed Rust and C checks.
+
+```sh
+export NAVI_SDK_TOOLING_SOURCE=/absolute/path/to/sdk-tooling
+mise exec -- make check-distribution
+```
+
+The private SDK Tooling workflow verifies the native receipts and standalone
+Swift, Rust, C and .NET consumers, including a locally built `win-x64` NuGet
+package. Dispatch it with the full commit SHA of the SDK on `main`:
+
+```sh
+gh workflow run check-sdk-distribution.yml -R naviapps/sdk-tooling \
+  -f sdk=configuration-storage -f "revision=$(git rev-parse HEAD)"
+```
 
 See the [.NET guide](../bindings/dotnet/README.md#windows-x64-package-acceptance)
-for the local Windows command, prerequisites and package output.
+for the local Windows command, prerequisites and package output. Use an owned
+environment for Windows ARM64 emulation checks.
 
 ## Native rebuilds and provenance
 

@@ -8,8 +8,10 @@ commercial policy or platform UI into this package.
 Use Git on main and commit coherent, verified changes. Coordinate commits,
 publication, artifact builds, CI/service/VM lifecycle and consumer pins at repository
 scope. Preserve user data, unsaved edits, original recovery, human QA and sealed releases. No real
-customer/security/credential/sharing changes. Use GitHub-hosted CI without private dependency credentials. Use login:false
-and task-scoped tools; maintained docs/comments are English.
+customer/security/credential/sharing changes. Keep `make check` and public
+GitHub-hosted CI independent of private dependencies. Run distribution validation
+with the pinned SDK Tooling checkout. Use login:false and task-scoped tools;
+maintained docs/comments are English.
 
 Never seed over an unreadable, missing selected, foreign or newer store. Retain
 old generations on restore. Copy raw SQLite families before automatic recovery;
