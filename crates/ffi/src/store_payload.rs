@@ -1,11 +1,11 @@
 //! Admit store payloads under the handle's configured limit before decoding.
-use crate::{Failure, invalid, payload};
+use crate::{Failure, encode_response, invalid, payload};
 use configuration_storage::ConfigurationStore;
 use serde::{
     Deserialize, Deserializer,
     de::{self, IgnoredAny, MapAccess, SeqAccess, Visitor, value::MapAccessDeserializer},
 };
-use serde_json::{Value, value::RawValue};
+use serde_json::value::RawValue;
 use std::fmt;
 
 // Internally tagged serde enums buffer their arguments before selecting a variant.
@@ -78,27 +78,27 @@ pub(super) fn dispatch(
     store: &ConfigurationStore,
     input: &[u8],
     decode: impl FnOnce(&str) -> Result<Vec<u8>, Failure>,
-) -> Result<Option<Value>, Failure> {
+) -> Result<Option<Vec<u8>>, Failure> {
     let maximum = store.configuration().maximum_payload_bytes;
     let value = match command_name(input)?.as_str() {
         "save" => {
             let request: Save<'_> = serde_json::from_slice(input).map_err(|_| invalid())?;
             let bytes = payload::decode_with(request.payload, maximum, decode)?;
-            serde_json::to_value(store.save(request.expected_generation.as_deref(), &bytes)?)
+            encode_response(store.save(request.expected_generation.as_deref(), &bytes)?)
         }
         "prepareRestore" => {
             let request: PrepareRestore<'_> =
                 serde_json::from_slice(input).map_err(|_| invalid())?;
             let bytes = payload::decode_with(request.payload, maximum, decode)?;
-            serde_json::to_value(store.prepare_restore(&bytes)?)
+            encode_response(store.prepare_restore(&bytes)?)
         }
         "restoreSnapshot" => {
             let request: RestoreSnapshot<'_> =
                 serde_json::from_slice(input).map_err(|_| invalid())?;
             let bytes = payload::decode_with(request.payload, maximum, decode)?;
-            serde_json::to_value(store.restore_snapshot(&bytes, &request.token)?)
+            encode_response(store.restore_snapshot(&bytes, &request.token)?)
         }
         _ => return Ok(None),
     };
-    value.map(Some).map_err(|_| invalid())
+    value.map(Some)
 }

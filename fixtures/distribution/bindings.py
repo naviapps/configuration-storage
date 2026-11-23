@@ -4,7 +4,6 @@
 import argparse
 import hashlib
 import json
-import os
 import platform
 import shutil
 import subprocess
@@ -14,6 +13,7 @@ import tomllib
 from pathlib import Path
 
 from sdk_tooling.adapters import load, support_inputs
+from sdk_tooling.dotnet import subprocess_environment
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = "NaviApps.ConfigurationStorage"
@@ -32,17 +32,6 @@ NATIVE_FILENAMES = {
 
 def run(*args, env, cwd=None):
     subprocess.run([str(a) for a in args], cwd=cwd or ROOT, env=env, check=True)
-
-
-def environment():
-    return dict(
-        os.environ,
-        DOTNET_CLI_TELEMETRY_OPTOUT="1",
-        DOTNET_NOLOGO="1",
-        DOTNET_CLI_UI_LANGUAGE="en",
-        DOTNET_CLI_USE_MSBUILD_SERVER="0",
-        MSBUILDDISABLENODEREUSE="1",
-    )
 
 
 def dotnet_tool(env):
@@ -163,19 +152,9 @@ def pack_and_consume(dotnet, library, rid, env, output, *, tooling):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--c-only", action="store_true")
-    mode.add_argument("--dotnet-only", action="store_true")
-    mode.add_argument(
-        "--managed-only",
-        action="store_true",
-        help="Run fake-native tests without requiring native artifacts",
-    )
+    parser.add_argument("--c-only", action="store_true")
     args = parser.parse_args()
-    env = environment()
-    if args.managed_only:
-        managed_tests(dotnet_tool(env), env, tooling=load("bindings"))
-        return
+    env = dict(subprocess_environment(), DOTNET_CLI_UI_LANGUAGE="en")
     if sys.platform != "darwin":
         raise SystemExit("Use the Windows distribution fixture on an owned x64 or ARM64 worker")
     library = framework_binary()
@@ -192,21 +171,21 @@ def main():
     receipt = {
         "nativeSha256": hashlib.sha256(library.read_bytes()).hexdigest(),
         "notRun": ["Windows runtime", "host application integration"],
+        "coverage": ["C owned-tempstore ABI"],
     }
     try:
-        if not args.dotnet_only:
-            tooling.compile_c(
-                ROOT / "crates/ffi/tests/c/abi.c",
-                compiler=("xcrun", "clang"),
-                output=output / "abi",
-                include_dirs=(ROOT / "crates/ffi/include",),
-                libraries=(library,),
-                standard="c17",
-                flags=("-Wl,-rpath," + str(library.parent.parent),),
-                env=env,
-                cwd=ROOT,
-            )
-            c_test(output / "abi", env, output)
+        tooling.compile_c(
+            ROOT / "crates/ffi/tests/c/abi.c",
+            compiler=("xcrun", "clang"),
+            output=output / "abi",
+            include_dirs=(ROOT / "crates/ffi/include",),
+            libraries=(library,),
+            standard="c17",
+            flags=("-Wl,-rpath," + str(library.parent.parent),),
+            env=env,
+            cwd=ROOT,
+        )
+        c_test(output / "abi", env, output)
         if not args.c_only:
             dotnet = dotnet_tool(env)
             managed_tests(dotnet, env, library, tooling=tooling)
@@ -215,15 +194,11 @@ def main():
                 dotnet, library, rid, env, output, tooling=tooling
             )
             receipt["runtime"] = rid
-        receipt["coverage"] = (["C owned-tempstore ABI"] if not args.dotnet_only else []) + (
-            [
+            receipt["coverage"] += [
                 "managed ownership/cancellation/disposal",
                 "native disposable stores",
                 "clean local package consumer",
             ]
-            if not args.c_only
-            else []
-        )
     finally:
         if artifacts.hashes(artifacts.files(artifact), artifact) != before:
             raise SystemExit("Parent-built framework changed during bindings acceptance")

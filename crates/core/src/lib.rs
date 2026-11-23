@@ -9,7 +9,7 @@ pub use recovery::{
 mod save_queue;
 mod store;
 
-use base64::{Engine, engine::general_purpose::STANDARD};
+use base64::{Engine, display::Base64Display, engine::general_purpose::STANDARD};
 pub use save_queue::{SaveCompletion, SaveQueueSnapshot, SnapshotSaveQueue};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -163,16 +163,22 @@ pub struct SnapshotCandidate {
     pub modified_at: f64,
     pub is_selected: Option<bool>,
 }
+
+struct Base64Bytes<'a>(&'a [u8]);
+
+impl Serialize for Base64Bytes<'_> {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.collect_str(&Base64Display::new(self.0, &STANDARD))
+    }
+}
+
 mod optional_bytes {
     use super::*;
     pub fn serialize<S: serde::Serializer>(
         value: &Option<Vec<u8>>,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        value
-            .as_ref()
-            .map(|data| STANDARD.encode(data))
-            .serialize(serializer)
+        value.as_deref().map(Base64Bytes).serialize(serializer)
     }
     pub fn deserialize<'de, D: serde::Deserializer<'de>>(
         deserializer: D,
@@ -189,7 +195,7 @@ mod tests;
 mod bytes {
     use super::*;
     pub fn serialize<S: serde::Serializer>(value: &[u8], serializer: S) -> Result<S::Ok, S::Error> {
-        STANDARD.encode(value).serialize(serializer)
+        Base64Bytes(value).serialize(serializer)
     }
     pub fn deserialize<'de, D: serde::Deserializer<'de>>(
         deserializer: D,

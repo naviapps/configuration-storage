@@ -31,12 +31,12 @@ unsafe fn input<'a>(data: *const u8, length: usize) -> Result<&'a [u8], Failure>
     }
     Ok(unsafe { std::slice::from_raw_parts(data, length) })
 }
-fn result<T: Serialize>(result: Result<T, Failure>) -> *mut ConfigurationStorageResult {
-    let (code, bytes) = match result {
-        Ok(value) => (
-            0,
-            serde_json::to_vec(&value).expect("serializable storage result"),
-        ),
+fn encode_response(value: impl Serialize) -> Result<Vec<u8>, Failure> {
+    serde_json::to_vec(&value).map_err(|_| invalid())
+}
+fn result(response: Result<Vec<u8>, Failure>) -> *mut ConfigurationStorageResult {
+    let (code, bytes) = match response {
+        Ok(bytes) => (0, bytes),
         Err(mut error) => {
             // JSON cannot represent every native path. Keep the failure and
             // retained files even when their optional location cannot be encoded.
@@ -97,7 +97,7 @@ unsafe fn open_store(
         Err(failure) => {
             if !error.is_null() {
                 unsafe {
-                    *error = result::<()>(Err(failure));
+                    *error = result(Err(failure));
                 }
             }
             std::ptr::null_mut()
@@ -105,7 +105,12 @@ unsafe fn open_store(
     }
 }
 #[derive(Deserialize)]
-#[serde(tag = "command", rename_all = "camelCase", deny_unknown_fields)]
+#[serde(
+    tag = "command",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 enum Command {
     Load,
     ListSnapshotCandidates {
@@ -117,20 +122,16 @@ enum Command {
         id: String,
     },
     PrepareBackup {
-        #[serde(rename = "expectedGeneration")]
         expected_generation: String,
     },
     CreateBackup {
-        #[serde(rename = "expectedGeneration")]
         expected_generation: String,
         token: String,
     },
     PrepareBackupRebuild {
-        #[serde(rename = "expectedGeneration")]
         expected_generation: String,
     },
     RebuildBackup {
-        #[serde(rename = "expectedGeneration")]
         expected_generation: String,
         token: String,
     },
@@ -155,39 +156,36 @@ pub unsafe extern "C" fn configuration_storage_store_dispatch(
         }
         let command: Command = serde_json::from_slice(input).map_err(|_| invalid())?;
         match command {
-            Command::Load => serde_json::to_value(store.0.load()?),
+            Command::Load => encode_response(store.0.load()?),
             Command::ListSnapshotCandidates {
                 limit,
                 after,
                 source,
-            } => serde_json::to_value(store.0.list_snapshot_candidates(
+            } => encode_response(store.0.list_snapshot_candidates(
                 limit,
                 after.as_deref(),
                 source,
             )?),
             Command::ReadSnapshotCandidate { id } => {
-                serde_json::to_value(store.0.read_snapshot_candidate(&id)?)
+                encode_response(store.0.read_snapshot_candidate(&id)?)
             }
             Command::PrepareBackup {
                 expected_generation,
-            } => serde_json::to_value(store.0.prepare_backup(&expected_generation)?),
+            } => encode_response(store.0.prepare_backup(&expected_generation)?),
             Command::CreateBackup {
                 expected_generation,
                 token,
-            } => serde_json::to_value(store.0.create_backup(&expected_generation, &token)?),
+            } => encode_response(store.0.create_backup(&expected_generation, &token)?),
             Command::PrepareBackupRebuild {
                 expected_generation,
-            } => serde_json::to_value(store.0.prepare_backup_rebuild(&expected_generation)?),
+            } => encode_response(store.0.prepare_backup_rebuild(&expected_generation)?),
             Command::RebuildBackup {
                 expected_generation,
                 token,
-            } => serde_json::to_value(store.0.rebuild_backup(&expected_generation, &token)?),
-            Command::ReadBackup => serde_json::to_value(store.0.read_backup()?),
-            Command::RestoreBackup { token } => {
-                serde_json::to_value(store.0.restore_backup(&token)?)
-            }
+            } => encode_response(store.0.rebuild_backup(&expected_generation, &token)?),
+            Command::ReadBackup => encode_response(store.0.read_backup()?),
+            Command::RestoreBackup { token } => encode_response(store.0.restore_backup(&token)?),
         }
-        .map_err(|_| invalid())
     })())
 }
 /// # Safety

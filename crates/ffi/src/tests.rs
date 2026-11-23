@@ -208,7 +208,7 @@ fn unrepresentable_optional_recovery_path_keeps_the_error_without_panicking() {
         code: ErrorCode::InvalidStoredData,
         recovery_directory: Some(unrepresentable_recovery_path()),
     };
-    let owner = unsafe { Box::from_raw(result::<()>(Err(error))) };
+    let owner = unsafe { Box::from_raw(result(Err(error))) };
     assert_eq!(owner.code, 1);
     let value: serde_json::Value = serde_json::from_slice(&owner.bytes).unwrap();
     assert_eq!(value["code"], "invalidStoredData");

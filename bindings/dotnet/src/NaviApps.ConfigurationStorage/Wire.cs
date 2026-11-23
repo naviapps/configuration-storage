@@ -34,20 +34,25 @@ internal static class Wire
 
     internal static InvalidDataException InvalidReply() => new("Invalid configuration_storage ABI reply.");
 
-    internal static JsonElement Consume(IntPtr pointer, IStorageNative native)
+    internal static T Consume<T>(IntPtr pointer, IStorageNative native, Func<JsonElement, T> decode)
     {
         if (pointer == IntPtr.Zero) throw InvalidReply();
-        using var owner = new ResultHandle(pointer, native);
-        var view = native.View(pointer);
-        if (view.Code > 1 || view.Data == IntPtr.Zero || view.Length == 0 || view.Length > MaximumJsonBytes)
-            throw InvalidReply();
-        var copy = new byte[(int)view.Length];
-        Marshal.Copy(view.Data, copy, 0, copy.Length);
+        uint status;
+        byte[] copy;
+        using (var owner = new ResultHandle(pointer, native))
+        {
+            var view = native.View(pointer);
+            if (view.Code > 1 || view.Data == IntPtr.Zero || view.Length == 0 || view.Length > MaximumJsonBytes)
+                throw InvalidReply();
+            status = view.Code;
+            copy = new byte[(int)view.Length];
+            Marshal.Copy(view.Data, copy, 0, copy.Length);
+        }
         try
         {
             using var document = JsonDocument.Parse(copy);
             var root = document.RootElement;
-            if (view.Code != 0)
+            if (status != 0)
             {
                 if (root.ValueKind != JsonValueKind.Object) throw InvalidReply();
                 var code = root.GetProperty("code").GetString() switch
@@ -73,7 +78,7 @@ internal static class Wire
                 var recovery = root.TryGetProperty("recoveryDirectory", out var value) ? value.GetString() : null;
                 throw new StorageException(new(code, recovery));
             }
-            return root.Clone();
+            return decode(root);
         }
         catch (Exception error) when (error is JsonException or InvalidOperationException or KeyNotFoundException)
         {

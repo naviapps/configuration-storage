@@ -117,7 +117,6 @@ def seal_package(source, destination, receipt, artifact_tooling):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--architecture", choices=("x64",), default="x64")
     parser.parse_args(argv)
     windows, tooling, artifacts = (load(name) for name in ("windows", "bindings", "artifacts"))
     environment = {

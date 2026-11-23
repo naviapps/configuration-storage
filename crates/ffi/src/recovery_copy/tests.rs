@@ -118,7 +118,7 @@ fn empty_padded_boundary_and_json_escaped_payloads_retain_their_bytes() {
         (r#""\u002f\u0077\u003d\u003d""#, "1", vec![255]),
     ] {
         let input = request(&path, maximum, payload);
-        assert_eq!(dispatch(input.as_bytes()).unwrap(), serde_json::Value::Null);
+        assert_eq!(dispatch(input.as_bytes()).unwrap(), b"null");
         assert_eq!(read_recovery_copy(&path, 3).unwrap().payload, expected);
     }
     // JSON field names, operation names and order retain their ordinary serde semantics.

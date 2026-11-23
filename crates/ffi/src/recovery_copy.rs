@@ -1,5 +1,5 @@
 //! Admit recovery options before retaining or decoding caller payload bytes.
-use crate::{Failure, invalid, payload};
+use crate::{Failure, encode_response, invalid, payload};
 use configuration_storage::{
     read_recovery_copy, validate_recovery_copy_configuration, write_recovery_copy,
 };
@@ -25,14 +25,14 @@ fn present_payload<'a, D: Deserializer<'a>>(decoder: D) -> Result<Option<&'a Raw
     <&RawValue>::deserialize(decoder).map(Some)
 }
 
-pub(super) fn dispatch(input: &[u8]) -> Result<serde_json::Value, Failure> {
+pub(super) fn dispatch(input: &[u8]) -> Result<Vec<u8>, Failure> {
     dispatch_with(input, payload::decode)
 }
 
 fn dispatch_with(
     input: &[u8],
     decode: impl FnOnce(&str) -> Result<Vec<u8>, Failure>,
-) -> Result<serde_json::Value, Failure> {
+) -> Result<Vec<u8>, Failure> {
     // Derived structs also accept positional arrays; commands require an object.
     if input
         .iter()
@@ -43,12 +43,12 @@ fn dispatch_with(
         return Err(invalid());
     }
     let request: Request<'_> = serde_json::from_slice(input).map_err(|_| invalid())?;
-    let value = match request.command.as_str() {
+    match request.command.as_str() {
         "read" => {
             if request.payload.is_some() {
                 return Err(invalid());
             }
-            serde_json::to_value(read_recovery_copy(&request.path, request.maximum)?)
+            encode_response(read_recovery_copy(&request.path, request.maximum)?)
         }
         "write" => {
             validate_recovery_copy_configuration(&request.path, request.maximum)?;
@@ -58,11 +58,10 @@ fn dispatch_with(
                 decode,
             )?;
             write_recovery_copy(&request.path, &payload, request.maximum)?;
-            serde_json::to_value(())
+            encode_response(())
         }
-        _ => return Err(invalid()),
-    };
-    value.map_err(|_| invalid())
+        _ => Err(invalid()),
+    }
 }
 
 #[cfg(test)]

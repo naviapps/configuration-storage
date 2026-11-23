@@ -107,14 +107,7 @@ class SDKToolPolicyTests(unittest.TestCase):
                     windows.verify_notices(cargo, {})
                 self.assertEqual(retained.read_bytes(), b"changed retained notice")
 
-    def test_windows_cli_and_packer_reject_arm64_before_selecting_tools(self):
-        with (
-            patch.object(windows, "load") as load,
-            patch("sys.stderr"),
-            self.assertRaises(SystemExit),
-        ):
-            windows.main(["--architecture", "arm64"])
-        load.assert_not_called()
+    def test_windows_packer_rejects_arm64_before_staging(self):
         tooling = Mock()
         with self.assertRaisesRegex(ValueError, "win-x64"):
             bindings.pack_and_consume(

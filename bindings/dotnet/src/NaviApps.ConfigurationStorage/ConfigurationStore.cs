@@ -66,7 +66,8 @@ public sealed class ConfigurationStore : IDisposable
         var owner = new StoreHandle(pointer, native);
         try
         {
-            if (error != IntPtr.Zero) { Wire.Consume(error, native); throw Wire.InvalidReply(); }
+            if (error != IntPtr.Zero)
+                return Wire.Consume<StoreHandle>(error, native, static _ => throw Wire.InvalidReply());
             if (owner.IsInvalid) throw Wire.InvalidReply();
             return owner;
         }
@@ -214,7 +215,7 @@ public sealed class ConfigurationStore : IDisposable
                     }
                     // Once native work begins, preserve the first operation through admission
                     // and dispatch, including its confirmed write or real failure.
-                    return decode(Wire.Consume(native.Dispatch(current.DangerousGetHandle(), json), native));
+                    return Wire.Consume(native.Dispatch(current.DangerousGetHandle(), json), native, decode);
                 }
                 finally { if (held) current!.DangerousRelease(); }
             }).ConfigureAwait(false);

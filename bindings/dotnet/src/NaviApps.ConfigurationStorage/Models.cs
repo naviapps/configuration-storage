@@ -43,10 +43,10 @@ public sealed class Snapshot : IEquatable<Snapshot>
     /// <summary>Returns a fresh copy; initialized empty bytes remain distinct from null.</summary>
     public byte[]? Payload => payload?.ToArray();
 
-    internal Snapshot(string? generation, byte[]? payload)
+    internal Snapshot(string? generation, byte[]? ownedPayload)
     {
         Generation = generation;
-        this.payload = payload?.ToArray();
+        payload = ownedPayload;
     }
 
     public bool Equals(Snapshot? other) => other is not null
