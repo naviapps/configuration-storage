@@ -290,7 +290,8 @@ Prepare the Rust version pinned in `rust-toolchain.toml`, its
 Visual Studio C++ toolchain. The toolchain must support an x64 target from
 the native host architecture. On ARM64 this requires ARM64-hosted MSVC with
 x64 target components and Windows x64 emulation to execute the resulting tests.
-Set `DOTNET_BIN` to the absolute path of the x64 .NET SDK 10.0.403 executable.
+Set `DOTNET_BIN` to the absolute path of the x64 .NET SDK selected by
+[`global.json`](../../global.json).
 
 From the SDK root, use the SDK Tooling revision pinned in
 [`mise.toml`](../../mise.toml) to run the Windows acceptance fixture.

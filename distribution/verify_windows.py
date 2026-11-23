@@ -12,6 +12,8 @@ import tomllib
 from pathlib import Path
 
 from sdk_tooling.adapters import git, load
+from sdk_tooling.cargo_build import compile_units, verify_units
+from sdk_tooling.native_plan import ffi_product
 from sdk_tooling.windows_delivery import RID, TARGET, X64Acceptance
 
 from distribution import verify_bindings as bindings
@@ -151,7 +153,8 @@ def main(argv=None):
         before = (checkout_commit(env), bindings.source_inputs(artifacts))
         # The committed macOS artifact and parent-maintained notices are read-only here.
         bindings.run("cargo", "fetch", "--locked", "--target", TARGET, env=env)
-        verify_notices(load("cargo"), env)
+        cargo = load("cargo")
+        verify_notices(cargo, env)
         build_env = build_environment(env, candidate / "target")
         bindings.run("cargo", "fmt", "--all", "--", "--check", env=build_env)
         bindings.run(
@@ -178,19 +181,30 @@ def main(argv=None):
             "--offline",
             env=build_env,
         )
-        bindings.run(
-            "cargo",
-            "build",
-            "-p",
-            "configuration-storage-ffi",
-            "--release",
-            "--target",
-            TARGET,
-            "--locked",
-            "--offline",
+        release = candidate / "target" / TARGET / "release"
+        product = ffi_product(ROOT)
+        graph = cargo.CargoDependencies(ROOT, [product.package], [TARGET], build_env)
+        dependencies = graph.provenance()
+        units = compile_units(
+            [
+                "cargo",
+                "build",
+                "-p",
+                product.package,
+                "--release",
+                "--target",
+                TARGET,
+                "--locked",
+                "--offline",
+                "--message-format=json-render-diagnostics",
+            ],
+            graph=graph,
+            target=TARGET,
+            library=release / "configuration_storage.dll",
             env=build_env,
         )
-        release = candidate / "target" / TARGET / "release"
+        cargo_build = {TARGET: units}
+        verify_units(cargo_build, dependencies, [TARGET], product.package, product.library)
         header = ROOT / "crates/ffi/include/configuration_storage.h"
         library = artifacts.stage_native(
             release / "configuration_storage.dll", candidate / "configuration_storage.dll"
@@ -202,6 +216,7 @@ def main(argv=None):
         exports = windows.verify_library(
             library, [header], "configuration_storage_", tools, build_env, "x64"
         )
+        windows.probe_abi(product, library, import_library, tools, build_env, "x64")
 
         def compile_fixture(source, name, include):
             executable = candidate / name
@@ -233,6 +248,8 @@ def main(argv=None):
         packages = bindings.pack_and_consume(dotnet, library, RID, build_env, candidate)
         if (checkout_commit(env), bindings.source_inputs(artifacts)) != before:
             raise SystemExit("Native source inputs changed during Windows acceptance")
+        if graph.provenance() != dependencies:
+            raise ValueError("Native dependencies changed during Windows acceptance")
         if hashlib.sha256(library.read_bytes()).hexdigest() != native_hash:
             raise ValueError("The staged DLL changed during Windows x64 acceptance")
         receipt = {
@@ -244,7 +261,11 @@ def main(argv=None):
             "dotnetVersion": acceptance.dotnet_version,
             "compiler": compiler,
             "inputs": before[1],
+            "dependencies": dependencies,
+            "cargoBuild": cargo_build,
             "exports": sorted(exports),
+            "abiVersions": product.abi_versions(windows=True),
+            "abiProbeArchitecture": "x64",
             "nativeSha256": native_hash,
             "staticCrt": True,
             "packages": packages,
