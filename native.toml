@@ -1,0 +1,4 @@
+[[artifacts]]
+id = "sdk"
+symbol_prefix = "configuration_storage_"
+minimum_macos = "26.0"

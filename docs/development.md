@@ -28,8 +28,8 @@ on first use. SwiftPM and NuGet installation use the distributed SDK.
 Swift sources and tests live in `Sources/` and `Tests/`; the public Swift guide is
 in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live in
 `crates/`, with C ABI tests in `crates/ffi/tests/c/`. .NET projects use
-`bindings/dotnet/src/` and `bindings/dotnet/tests/`. SDK-specific native and packaging drivers live in
-`tools/`, independent consumer fixtures in `fixtures/`, cross-language guides in
+`bindings/dotnet/src/` and `bindings/dotnet/tests/`. Packaging checks live in
+`fixtures/distribution/` alongside the independent consumer fixtures. Cross-language guides are in
 `docs/`, and tracked native frameworks and receipts in `Artifacts/`.
 
 ## Choose a check
@@ -46,14 +46,14 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | `make check-swift`              | Strict Swift library and test compilation against the tracked framework                                 | No             |
 | `make check-fast`               | Owned source lint and both Rust/Swift compilation checks                                                | No             |
 | `make check`                    | Source lint, Rust Clippy and tests, .NET binding tests, Swift tests and the standalone SwiftPM consumer | Yes            |
-| `make check-distribution`       | Tooling tests, native verification, C/.NET/NuGet checks and installed Rust/C clients                    | Yes            |
+| `make check-distribution`       | Distribution fixture tests, native verification, C/.NET/NuGet checks and installed Rust/C clients       | Yes            |
 | `make test-rust`                | Rust workspace tests and doctests, locked/offline                                                       | Yes            |
 | `make test-managed`             | .NET binding tests with fake-native responses                                                           | Yes            |
 | `make test`                     | Strict Swift tests against the tracked framework                                                        | Yes            |
 | `make test-consumer`            | Standalone SwiftPM public-API consumer                                                                  | Yes            |
 | `make test-c`                   | Native verification and disposable-store C ABI consumer                                                 | Yes            |
 | `make test-bindings`            | Native verification, C/.NET tests and clean local NuGet consumer                                        | Yes            |
-| `make test-tools`               | SDK build/fixture policy tests                                                                          | Yes            |
+| `make test-fixtures`            | SDK build/fixture policy tests                                                                          | Yes            |
 | `make docs`                     | Swift public-symbol compilation and DocC conversion with warnings as errors                             | No             |
 | `make test-installed-consumers` | Independent Git Rust and installed C clients using fresh consumer directories                           | Yes            |
 | `make acceptance`               | `check` and `check-distribution`                                                                        | Yes            |
@@ -89,9 +89,8 @@ UUID-owned temporary stores. Distribution checks verify the native receipt
 against the source before testing the package. Rebuilding the framework requires
 the explicit `make native` command.
 
-`PYTHON`, `CARGO` and `SWIFT` accept executable paths, for example
-`mise exec -- make check PYTHON=/path/to/python3`; `DOTNET_BIN` selects .NET for
-binding drivers. Use command-scoped `PATH`, `RUSTFLAGS` and `DEVELOPER_DIR` for
+`CARGO` and `SWIFT` accept executable paths. `DOTNET_BIN` selects .NET for binding
+fixtures. Use command-scoped `PATH`, `RUSTFLAGS` and `DEVELOPER_DIR` for
 provisioned tools. Keep a matching Rust toolchain on `PATH` for Cargo subcommands
 and the native builder. Reuse `target/` and `.build/` between edits;
 `CARGO_TARGET_DIR` can select a task-owned Rust directory. Native builds use `target/native`.
@@ -142,11 +141,10 @@ gh workflow run check-sdk-distribution.yml -R naviapps/sdk-tooling \
   -f sdk=configuration-storage -f "revision=$(git rev-parse HEAD)"
 ```
 
-For local native and packaging checks, prepare a clean SDK Tooling checkout at
-the revision recorded in [mise.toml](../mise.toml), then run:
+Run the local native and packaging checks with the SDK Tooling revision pinned
+in [mise.toml](../mise.toml).
 
 ```sh
-export NAVI_SDK_TOOLING_SOURCE=/absolute/path/to/sdk-tooling
 mise exec -- make check-distribution
 ```
 
@@ -159,7 +157,9 @@ environment for Windows ARM64 emulation checks.
 
 ## Native rebuilds and provenance
 
-The SDK's explicit `make native` requires pinned Rust 1.99.1, both Darwin
+[native.toml](../native.toml) declares the framework inputs, symbol prefix and
+minimum macOS version. The explicit `make native` target requires pinned Rust
+1.99.1, both Darwin
 standard-library targets and locked offline
 dependencies. It uses `target/native` and builds `libconfiguration_storage.dylib`
 into a universal arm64/x86_64 framework with minimum macOS 26.0. Its receipt is

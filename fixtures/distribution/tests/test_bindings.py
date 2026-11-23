@@ -1,7 +1,6 @@
 """ConfigurationStorage ABI fixture and package acceptance boundaries."""
 
 import hashlib
-import importlib.util
 import json
 import sys
 import tempfile
@@ -10,19 +9,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools"))
-spec = importlib.util.spec_from_file_location(
-    "configuration_storage_bindings", ROOT / "tools/bindings.py"
-)
-bindings = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(bindings)
-with patch.dict(sys.modules, {"bindings": bindings}):
-    spec = importlib.util.spec_from_file_location(
-        "configuration_storage_windows", ROOT / "tools/windows.py"
-    )
-    windows = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(windows)
+from fixtures.distribution import bindings, windows
+
+ROOT = Path(__file__).resolve().parents[3]
 artifacts = bindings.load("artifacts")
 
 

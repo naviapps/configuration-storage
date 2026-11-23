@@ -11,11 +11,11 @@ import tempfile
 import tomllib
 from pathlib import Path
 
-from _tooling import git, load
+from sdk_tooling.adapters import git, load
 
-import bindings
+from fixtures.distribution import bindings
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 TARGET = "x86_64-pc-windows-msvc"
 RID = "win-x64"
 RECEIPT = "configuration-storage-windows.json"

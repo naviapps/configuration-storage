@@ -272,12 +272,10 @@ Managed acceptance checks the binding contract with fake-native responses,
 including ownership, framing, limits, ABI rejection, cancellation, serialization
 and disposal. It requires no native artifact.
 
-For macOS native C/.NET acceptance and a fresh local NuGet consumer, prepare the
-[pinned SDK Tooling checkout](../../docs/development.md#maintainer-distribution-checks)
-and run `mise exec -- make test-bindings`. It verifies and consumes the existing
-`Artifacts/CConfigurationStorage.xcframework` without rebuilding it.
-`tools/bindings.py --c-only` and `--dotnet-only` select subsets after native
-verification. Runtime cases cover opaque bytes, generation conflicts, reviewed
+For macOS native C/.NET acceptance and a fresh local NuGet consumer, run
+`mise exec -- make test-bindings`. It uses the pinned SDK Tooling CLI to verify
+and consume the existing `Artifacts/CConfigurationStorage.xcframework`.
+`mise exec -- make test-c` selects the C subset after native verification. Runtime cases cover opaque bytes, generation conflicts, reviewed
 backup/restore tokens, retained originals and snapshot candidate inspection.
 
 ### Windows x64 package acceptance
@@ -290,13 +288,12 @@ the native host architecture. On ARM64 this requires ARM64-hosted MSVC with
 x64 target components and Windows x64 emulation to execute the resulting tests.
 Set `DOTNET_BIN` to the absolute path of the x64 .NET SDK 10.0.403 executable.
 
-From the SDK root, provide the same pinned SDK Tooling checkout and run the
-repository's acceptance driver.
+From the SDK root, use a checkout of the SDK Tooling revision pinned in
+[`mise.toml`](../../mise.toml) to run the Windows acceptance fixture.
 
 ```powershell
-$env:NAVI_SDK_TOOLING_SOURCE = 'C:\source\sdk-tooling'
 $env:DOTNET_BIN = 'C:\Program Files\dotnet\x64\dotnet.exe'
-python -E -S -B tools/windows.py
+python -I -B 'C:\source\sdk-tooling\tasks\sdk' python -m fixtures.distribution.windows
 ```
 
 Use the installed x64 executable's path on your machine. The driver builds the

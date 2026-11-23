@@ -46,8 +46,8 @@ let package = Package(
 
 Place your Swift source in `Sources/StorageClient/`, import `ConfigurationStorage`,
 and run `swift build` from your package root with Swift 6.3 or newer on macOS 26 or later.
-SwiftPM consumes the tracked native framework. Ordinary consumers do not run
-`tools/`, install Rust or rebuild native artifacts.
+SwiftPM consumes the tracked native framework without developer tooling, a Rust
+installation or a native rebuild.
 
 ## Install from Rust or C
 
