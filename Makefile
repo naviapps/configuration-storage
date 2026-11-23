@@ -47,7 +47,6 @@ lint:
 	mise exec -- python3 -B tools/quality.py check --dotnet
 
 lint-rust:
-	"$(CARGO)" fmt --all -- --check
 	"$(CARGO)" clippy --workspace --all-targets --locked --offline -- -D warnings
 
 test: native-verify

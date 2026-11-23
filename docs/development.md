@@ -42,7 +42,7 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | Command                         | Coverage                                                                                            | Executes tests |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- | -------------- |
 | `make lint`                     | Owned source format/lint, workflow checks and managed whitespace                                    | No             |
-| `make lint-rust`                | Rust formatting and workspace Clippy, locked/offline                                                | No             |
+| `make lint-rust`                | Rust workspace Clippy, locked/offline                                                               | No             |
 | `make native-verify`            | Source/artifact receipt, notices, exports and platform verification                                 | No             |
 | `make check-rust`               | Rust workspace library and test compilation, locked/offline                                         | No             |
 | `make check-swift`              | Native verification and strict Swift library/test compilation                                       | No             |
@@ -126,11 +126,10 @@ for the isolation and evidence mechanisms.
 The [macOS workflow](../.github/workflows/check-macos.yml) uses GitHub's Xcode 27
 runner for Rust and strict Swift tests. The
 [Windows workflow](../.github/workflows/check-windows-x64.yml) uses GitHub's Windows
-x64 runner. Once the pinned tooling is publicly accessible, the `full` dispatch
-option also verifies native receipts and standalone Swift, Rust, C and .NET
-consumers, including a locally built `win-x64` NuGet package. These checks run
-automatically when the SDK is public. Use an owned environment for additional
-macOS runtime-version or Windows ARM64 emulation checks.
+x64 runner. CI verifies native receipts and standalone Swift, Rust, C and .NET
+consumers, including a locally built `win-x64` NuGet package. Use an owned
+environment for additional macOS runtime-version or Windows ARM64 emulation
+checks.
 
 See the [.NET guide](../bindings/dotnet/README.md#windows-x64-package-acceptance)
 for the local Windows command, prerequisites and package output.
