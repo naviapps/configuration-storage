@@ -1,4 +1,10 @@
+using System.Text.Json;
 using NaviApps.ConfigurationStorage;
+
+AppContext.SetSwitch("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", false);
+if (JsonSerializer.IsReflectionEnabledByDefault)
+    throw new InvalidOperationException("The fixture requires JSON reflection to be disabled.");
+
 var directory = Path.Combine(Path.GetTempPath(), "configuration-storage-consumer-" + Guid.NewGuid());
 try
 {

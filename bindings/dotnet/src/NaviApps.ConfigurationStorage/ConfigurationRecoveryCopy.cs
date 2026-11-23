@@ -45,7 +45,7 @@ public sealed class ConfigurationRecoveryCopy : IEquatable<ConfigurationRecovery
     {
         cancellationToken.ThrowIfCancellationRequested();
         Validate(path, maximumPayloadBytes);
-        return await ExecuteAsync(new { command = "read", path, maximumPayloadBytes }, native,
+        return await ExecuteAsync(new RecoveryCopyRequest("read", path, maximumPayloadBytes), native,
             maximumPayloadBytes, Wire.RecoveryCopy, cancellationToken).ConfigureAwait(false);
     }
 
@@ -62,7 +62,7 @@ public sealed class ConfigurationRecoveryCopy : IEquatable<ConfigurationRecovery
         Validate(path, maximumPayloadBytes);
         if (payload.Length > maximumPayloadBytes) throw new StorageException(new(ErrorCode.InvalidConfiguration));
         var copy = payload.ToArray();
-        await ExecuteAsync(new { command = "write", path, maximumPayloadBytes }, native, 0,
+        await ExecuteAsync(new RecoveryCopyRequest("write", path, maximumPayloadBytes), native, 0,
             static (root, bytes) => root.ValueKind == JsonValueKind.Null && bytes is null
                 ? true : throw Wire.InvalidReply(), cancellationToken, copy).ConfigureAwait(false);
     }

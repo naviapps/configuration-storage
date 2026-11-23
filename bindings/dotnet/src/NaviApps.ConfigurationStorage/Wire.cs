@@ -7,7 +7,6 @@ namespace NaviApps.ConfigurationStorage;
 internal static class Wire
 {
     internal const int MaximumJsonBytes = 1024 * 1024;
-    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     internal static void ValidateLocalPath(string path)
@@ -27,7 +26,7 @@ internal static class Wire
 
     internal static byte[] Encode<T>(T value)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(value, Options);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(value, StorageJson.Type<T>());
         if (bytes.Length > MaximumJsonBytes) throw new StorageException(new(ErrorCode.InvalidConfiguration));
         return bytes;
     }

@@ -251,8 +251,9 @@ before replacing it, including malformed selectors. Capture failure leaves the
 selection and original databases intact.
 
 This binding requires native ABI 14. Requests and results carry JSON metadata
-alongside a separate byte buffer for opaque payloads. The binding copies the
-borrowed result bytes before releasing their owner.
+alongside a separate byte buffer for opaque payloads. The binding uses
+source-generated request serialization and works with JSON reflection disabled.
+The binding copies borrowed result bytes before releasing their owner.
 An incompatible ABI produces
 `UnsupportedAbiVersion` before opening a store, creating a save queue or invoking
 the standalone recovery-copy symbol. An unsupported stored SQLite format produces
@@ -282,7 +283,7 @@ For macOS native C/.NET acceptance and a fresh local NuGet consumer, run
 and consume the existing `Artifacts/CConfigurationStorage.xcframework`.
 The source fixture passes `ConfigurationStorageNativeLibrary` to MSBuild to
 copy the selected library to its output. The NuGet consumer loads the packaged
-native asset through standard .NET resolution.
+native asset through standard .NET resolution and runs with JSON reflection disabled.
 `mise exec -- make test-c` selects the C subset after native verification. Runtime cases cover opaque bytes, generation conflicts, reviewed
 backup/restore tokens, retained originals and snapshot candidate inspection.
 

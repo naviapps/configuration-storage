@@ -75,31 +75,26 @@ public sealed class ConfigurationStore : IDisposable
     }
 
     public Task<Snapshot> LoadAsync(CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "load" }, Wire.Snapshot, cancellationToken);
+        => ExecuteAsync(new StorageRequest("load"), Wire.Snapshot, cancellationToken);
 
     /// <summary>Lists unverified generation and backup metadata, including known selected files.
     /// Limit is 1 through 256; after is an opaque exclusive cursor. Concurrent edits may change
     /// later pages; restart from the first page to rescan. This does not select or validate bytes.</summary>
     public Task<SnapshotCandidatePage> ListSnapshotCandidatesAsync(int limit = 64, string? after = null, SnapshotCandidateSource? source = null, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new
-        {
-            command = "listSnapshotCandidates",
-            limit,
-            after,
-            source = source switch
+        => ExecuteAsync(new SnapshotCandidatePageRequest("listSnapshotCandidates", limit, after,
+            source switch
             {
                 null => null,
                 SnapshotCandidateSource.Generation => "generation",
                 SnapshotCandidateSource.Backup => "backup",
                 _ => throw new ArgumentOutOfRangeException(nameof(source))
-            }
-        }, Wire.CandidatePage, cancellationToken);
+            }), Wire.CandidatePage, cancellationToken);
 
     /// <summary>Reads a retained candidate through a private SQLite-family copy without changing
     /// selection or original files. Validate the returned opaque bytes with the host's schema
     /// before using PrepareRestoreAsync and RestoreSnapshotAsync.</summary>
     public Task<SnapshotCandidate> ReadSnapshotCandidateAsync(string id, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "readSnapshotCandidate", id }, Wire.Candidate, cancellationToken);
+        => ExecuteAsync(new SnapshotCandidateRequest("readSnapshotCandidate", id), Wire.Candidate, cancellationToken);
 
     public Task<Snapshot> SaveAsync(string? expectedGeneration, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
     {
@@ -108,43 +103,43 @@ public sealed class ConfigurationStore : IDisposable
             return Task.FromException<Snapshot>(new StorageException(new(ErrorCode.InvalidConfiguration)));
         // Capture before returning so caller mutation cannot change an accepted request.
         var copy = payload.ToArray();
-        return ExecuteAsync(new { command = "save", expectedGeneration }, Wire.Snapshot, cancellationToken, copy);
+        return ExecuteAsync(new ExpectedGenerationRequest("save", expectedGeneration), Wire.Snapshot, cancellationToken, copy);
     }
 
     /// <summary>Returns the exact existing backup, or its absence, together with a rotation token.
     /// Validate the returned backup bytes and choose whether to replace them before creating a backup.</summary>
     public Task<BackupPreparation> PrepareBackupAsync(string expectedGeneration, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "prepareBackup", expectedGeneration }, Wire.BackupPreparation, cancellationToken);
+        => ExecuteAsync(new ExpectedGenerationRequest("prepareBackup", expectedGeneration), Wire.BackupPreparation, cancellationToken);
 
     /// <summary>Creates or reuses a backup only while the prepared backup state is unchanged.
     /// Supply BackupPreparation.Token; a changed backup or wrong-purpose token fails with BackupChanged,
     /// including when the backup already has the requested generation.</summary>
     public Task<BackupSnapshot> CreateBackupAsync(string expectedGeneration, string token, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "createBackup", expectedGeneration, token }, Wire.Backup, cancellationToken);
+        => ExecuteAsync(new BackupCommitRequest("createBackup", expectedGeneration, token), Wire.Backup, cancellationToken);
 
     /// <summary>Reviews complete raw primary and backup identities for an explicit rebuild.
     /// Requires the current primary generation; a stale generation fails with Conflict.
     /// Preparation does not select a new backup. Known valid
     /// backups with a foreign owner or unsupported format are refused.</summary>
     public Task<string> PrepareBackupRebuildAsync(string expectedGeneration, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "prepareBackupRebuild", expectedGeneration }, Wire.ReviewToken, cancellationToken);
+        => ExecuteAsync(new ExpectedGenerationRequest("prepareBackupRebuild", expectedGeneration), Wire.ReviewToken, cancellationToken);
 
     /// <summary>Rechecks reviewed identities and selects a fresh backup, retaining the prior family.
     /// A stale token fails with BackupChanged, including after a newer primary write or any
     /// raw family change, and requires a new review. This explicitly permits rebuilding an invalid
     /// backup; normal CreateBackupAsync remains conservative.</summary>
     public Task<BackupSnapshot> RebuildBackupAsync(string expectedGeneration, string token, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "rebuildBackup", expectedGeneration, token }, Wire.Backup, cancellationToken);
+        => ExecuteAsync(new BackupCommitRequest("rebuildBackup", expectedGeneration, token), Wire.Backup, cancellationToken);
 
     /// <summary>Returns opaque backup bytes for host validation and a token binding the backup
     /// and current raw active selection. Re-read and validate after either changes.</summary>
     public Task<BackupSnapshot> ReadBackupAsync(CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "readBackup" }, Wire.Backup, cancellationToken);
+        => ExecuteAsync(new StorageRequest("readBackup"), Wire.Backup, cancellationToken);
 
     /// <summary>Rust rechecks both the backup and raw active selection represented by the
     /// validated token. Newer writes fail with BackupChanged instead of being overwritten.</summary>
     public Task<Snapshot> RestoreBackupAsync(string token, CancellationToken cancellationToken = default)
-        => ExecuteAsync(new { command = "restoreBackup", token }, Wire.Snapshot, cancellationToken);
+        => ExecuteAsync(new ReviewTokenRequest("restoreBackup", token), Wire.Snapshot, cancellationToken);
 
     /// <summary>Binds the caller's opaque bytes and current raw selection for restoration.
     /// The host must validate these bytes before restoring with the returned token.</summary>
@@ -154,7 +149,7 @@ public sealed class ConfigurationStore : IDisposable
         if (payload.Length > configuration.MaximumPayloadBytes)
             return Task.FromException<string>(new StorageException(new(ErrorCode.InvalidConfiguration)));
         var copy = payload.ToArray();
-        return ExecuteAsync(new { command = "prepareRestore" }, Wire.ReviewToken, cancellationToken, copy);
+        return ExecuteAsync(new StorageRequest("prepareRestore"), Wire.ReviewToken, cancellationToken, copy);
     }
 
     /// <summary>Restores validated bytes to a fresh generation while retaining original files.
@@ -165,7 +160,7 @@ public sealed class ConfigurationStore : IDisposable
         if (payload.Length > configuration.MaximumPayloadBytes)
             return Task.FromException<Snapshot>(new StorageException(new(ErrorCode.InvalidConfiguration)));
         var copy = payload.ToArray();
-        return ExecuteAsync(new { command = "restoreSnapshot", token }, Wire.Snapshot, cancellationToken, copy);
+        return ExecuteAsync(new ReviewTokenRequest("restoreSnapshot", token), Wire.Snapshot, cancellationToken, copy);
     }
 
     private async Task<T> ExecuteAsync<TCommand, T>(TCommand command, Func<JsonElement, byte[]?, T> decode,
