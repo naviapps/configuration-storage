@@ -2,12 +2,15 @@
 commands = [
   ["xcrun", "swift", "--version"],
   ["cargo", "fetch", "--locked"],
-  ["make", "check-distribution"],
+  ["make", "test-distribution-tools", "test-native-bindings", "test-installed-consumers"],
 ]
 
 [windows]
 commands = [
   ["rustup", "install", "--no-self-update"],
   ["sdk-tooling", "python", "-m", "unittest", "discover", "-s", "distribution/tests"],
-  ["sdk-tooling", "windows", "-m", "distribution.verify_windows"],
+  ["sdk-tooling", "windows", "-m", "distribution.verify_windows", "--native-only"],
 ]
+
+[nuget]
+pack = "distribution/pack_nuget.py"

@@ -63,6 +63,9 @@ public sealed class Snapshot : IEquatable<Snapshot>
     public static bool operator !=(Snapshot? left, Snapshot? right) => !(left == right);
 }
 
+/// <summary>A verified checkpoint with the identity required for guarded restoration.</summary>
+/// <param name="Snapshot">Checkpoint generation and opaque payload.</param>
+/// <param name="Token">Opaque restoration token. Validate the payload before using it.</param>
 /// <param name="ModifiedAt">Unix seconds, including the fractional part.</param>
 public sealed record BackupSnapshot(Snapshot Snapshot, string Token, double ModifiedAt);
 

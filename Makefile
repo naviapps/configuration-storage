@@ -80,6 +80,10 @@ test-c: native-verify
 test-bindings: native-verify
 	$(SDK_TOOLING) python -m distribution.verify_bindings
 
+.PHONY: test-native-bindings
+test-native-bindings: native-verify
+	$(SDK_TOOLING) python -m distribution.verify_bindings --no-package
+
 test-distribution-tools:
 	$(SDK_TOOLING) python -m unittest discover -s distribution/tests -v
 

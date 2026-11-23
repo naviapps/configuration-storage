@@ -9,25 +9,18 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import tomllib
 from pathlib import Path
 
-from sdk_tooling.adapters import load, support_inputs
+from sdk_tooling.adapters import load
 from sdk_tooling.dotnet import subprocess_environment
 
+from distribution.pack_nuget import NUGET_CONFIG, pack
+
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = "NaviApps.ConfigurationStorage"
-PROJECT = ROOT / "bindings/dotnet/src" / PACKAGE / (PACKAGE + ".csproj")
 TEST_PROJECT = (
     ROOT / "bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj"
 )
-NUGET_CONFIG = ROOT / "bindings/dotnet/tests/ConfigurationStorage.Tests/NuGet.Config"
 MODULE = "CConfigurationStorage"
-NATIVE_FILENAMES = {
-    "osx-arm64": "libconfiguration_storage.dylib",
-    "osx-x64": "libconfiguration_storage.dylib",
-    "win-x64": "configuration_storage.dll",
-}
 
 
 def run(*args, env, cwd=None):
@@ -55,32 +48,6 @@ def framework_binary():
     )
 
 
-def source_inputs(artifacts):
-    paths = [
-        ROOT / name
-        for name in ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "mise.toml", "LICENSE")
-    ]
-    paths += [p for p in (ROOT / "crates").rglob("*") if p.is_file() and p.name != ".DS_Store"]
-    paths += [p for p in (ROOT / "ThirdParty").rglob("*") if p.is_file() and p.name != ".DS_Store"]
-    paths += [
-        p
-        for p in (ROOT / "bindings/dotnet").rglob("*")
-        if p.is_file()
-        and p.name != ".DS_Store"
-        and not {"bin", "obj"}.intersection(p.relative_to(ROOT / "bindings/dotnet").parts)
-    ]
-    paths += [
-        ROOT / name
-        for name in (
-            "distribution/verify_bindings.py",
-            "distribution/verify_windows.py",
-            "fixtures/consumers/dotnet/Program.cs",
-            "fixtures/consumers/c/main.c",
-        )
-    ]
-    return artifacts.hashes(paths, ROOT) | support_inputs(ROOT)
-
-
 def managed_tests(dotnet, env, library, *, runtime=None):
     load("dotnet").run_managed(
         dotnet,
@@ -100,58 +67,11 @@ def c_test(executable, env, output):
         run(executable, Path(directory) / "store", env=env)
 
 
-def pack_and_consume(dotnet, library, rid, env, output):
-    if rid not in NATIVE_FILENAMES:
-        raise ValueError("ConfigurationStorage packages support osx-arm64, osx-x64 and win-x64")
-    filename = NATIVE_FILENAMES[rid]
-    staged = load("artifacts").stage_native(library, output / "native" / rid / filename)
-    # Notices are supplied and maintained by the native owner, never generated here.
-    notices = {
-        "licenses/" + path.relative_to(ROOT / "ThirdParty").as_posix(): path
-        for path in (ROOT / "ThirdParty").rglob("*")
-        if path.is_file() and path.name not in (".DS_Store", "registry-notices.json")
-    }
-    if not notices:
-        raise SystemExit("Parent-maintained ThirdParty notices are required before packaging")
-    packages = output / "packages"
-    packages.mkdir(parents=True, exist_ok=True)
-    version = tomllib.loads((ROOT / "Cargo.toml").read_text())["workspace"]["package"]["version"]
-    load("dotnet").pack_project(
-        dotnet,
-        PROJECT,
-        output=packages,
-        env=env,
-        cwd=ROOT,
-        nuget_config=NUGET_CONFIG,
-        properties={
-            "Version": version,
-            "ConfigurationStorageRuntimeIdentifier": rid,
-            "ConfigurationStorageNativeLibrary": str(staged),
-        },
-    )
-    package = packages / (PACKAGE + "." + version + ".nupkg")
-    load("nuget").audit_package(
-        package,
-        expected_files={"LICENSE": ROOT / "LICENSE", **notices},
-        runtime_files={"runtimes/" + rid + "/native/" + filename: library},
-    )
-    # macOS keeps the portable fixture. On Windows require the explicit x64 package asset.
-    load("nuget").run_isolated_consumer(
-        dotnet,
-        packages=[package],
-        references={PACKAGE: version},
-        source=(ROOT / "fixtures/consumers/dotnet/Program.cs").read_text(encoding="utf-8"),
-        work_parent=output,
-        env=env,
-        exclude_paths=(ROOT / "target", output),
-        runtime=rid if rid == "win-x64" else None,
-    )
-    return {package.name: hashlib.sha256(package.read_bytes()).hexdigest()}
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--c-only", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--c-only", action="store_true")
+    mode.add_argument("--no-package", action="store_true")
     args = parser.parse_args()
     env = dict(subprocess_environment(), DOTNET_CLI_UI_LANGUAGE="en")
     if sys.platform != "darwin":
@@ -188,13 +108,16 @@ def main():
             dotnet = dotnet_tool(env)
             managed_tests(dotnet, env, library)
             rid = "osx-arm64" if platform.machine().lower() in ("arm64", "aarch64") else "osx-x64"
-            receipt["packages"] = pack_and_consume(dotnet, library, rid, env, output)
             receipt["runtime"] = rid
             receipt["coverage"] += [
                 "managed ownership/cancellation/disposal",
                 "native disposable stores",
-                "clean local package consumer",
             ]
+            if not args.no_package:
+                package = pack(("osx-arm64", "osx-x64"), environment=env)
+                run(*load("consumers.nuget").command(package, root=ROOT), env=env)
+                receipt["packages"] = {package.name: artifacts.file_sha256(package)}
+                receipt["coverage"].append("clean local package consumer")
     finally:
         if artifacts.hashes(artifacts.files(artifact), artifact) != before:
             raise SystemExit("Parent-built framework changed during bindings acceptance")

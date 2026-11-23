@@ -1,14 +1,13 @@
 """ConfigurationStorage ABI fixture and package acceptance boundaries."""
 
-import hashlib
 import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+from distribution import pack_nuget
 from distribution import verify_bindings as bindings
 from distribution import verify_windows as windows
 
@@ -62,20 +61,16 @@ class SDKToolPolicyTests(unittest.TestCase):
                     bindings.main()
                 run.assert_not_called()
 
-    def test_windows_sqlite_build_preserves_prepared_flags_and_uses_disposable_target(self):
+    def test_windows_sqlite_uses_static_crt_without_overwriting_worker_environment(self):
         env = {
             "CARGO_ENCODED_RUSTFLAGS": "-Ctarget-feature=+crt-static",
-            "CARGO_HOME": "/fixture/cargo",
-            "CARGO_INCREMENTAL": "1",
             "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "/fixture/tools/link.exe",
             "CFLAGS_x86_64-pc-windows-msvc": "/MD",
             "LIBSQLITE3_SYS_USE_PKG_CONFIG": "1",
         }
         before = dict(env)
-        result = windows.build_environment(env, Path("/fixture/target"))
+        result = windows.configure_sqlite(env)
         self.assertEqual(env, before)
-        self.assertEqual(result["CARGO_TARGET_DIR"], str(Path("/fixture/target")))
-        self.assertEqual(result["CARGO_INCREMENTAL"], "0")
         self.assertEqual(result["CFLAGS_x86_64_pc_windows_msvc"], "/MT")
         self.assertEqual(result["LIBSQLITE3_SYS_USE_PKG_CONFIG"], "0")
         self.assertNotIn("CFLAGS_x86_64-pc-windows-msvc", result)
@@ -83,42 +78,16 @@ class SDKToolPolicyTests(unittest.TestCase):
             result["CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER"],
             env["CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER"],
         )
-        flags = result["CARGO_ENCODED_RUSTFLAGS"].split("\x1f")
-        self.assertIn("-Ctarget-feature=+crt-static", flags)
-        self.assertIn("--remap-path-prefix=/fixture/cargo=/cargo", flags)
 
-    def test_windows_requires_verified_retained_notices_without_rewriting_them(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory).resolve()
-            retained = root / "ThirdParty/fixture-1.0.0/LICENSE"
-            retained.parent.mkdir(parents=True)
-            retained.write_bytes(b"owned notice")
-            graph = Mock()
-            graph.registry_notices.return_value = {
-                "fixture-1.0.0": {"files": {"LICENSE": b"owned notice"}}
-            }
-            cargo = SimpleNamespace(
-                CargoDependencies=Mock(return_value=graph), runtime_notices=Mock()
-            )
-            with patch.object(windows, "ROOT", root):
-                before = artifacts.hashes(artifacts.files(root), root)
-                windows.verify_notices(cargo, {})
-                self.assertEqual(artifacts.hashes(artifacts.files(root), root), before)
-                self.assertEqual(
-                    cargo.CargoDependencies.call_args.args[2], ["x86_64-pc-windows-msvc"]
-                )
-                retained.write_bytes(b"changed retained notice")
-                with self.assertRaisesRegex(SystemExit, "Parent must retain"):
-                    windows.verify_notices(cargo, {})
-                self.assertEqual(retained.read_bytes(), b"changed retained notice")
-
-    def test_windows_packer_rejects_arm64_before_staging(self):
+    def test_packer_rejects_arm64_windows_before_artifact_inspection(self):
         with (
-            patch.object(bindings, "load") as load,
+            patch.object(pack_nuget, "load") as load,
+            patch.object(pack_nuget, "xcframework") as framework,
             self.assertRaisesRegex(ValueError, "win-x64"),
         ):
-            bindings.pack_and_consume("dotnet", Path("absent.dll"), "win-arm64", {}, Path("unused"))
+            pack_nuget.pack(("win-arm64",))
         load.assert_not_called()
+        framework.assert_not_called()
 
     def test_windows_rejects_conflicting_artifact_roots_before_selecting_dotnet(self):
         artifact_roots = {"VM_RUNNER_ARTIFACTS_DIR": "current", "NAVI_CI_ARTIFACTS": "legacy"}
@@ -128,48 +97,20 @@ class SDKToolPolicyTests(unittest.TestCase):
         ):
             windows.main([])
 
-    def test_windows_acceptance_inputs_cover_local_tools_and_package_license(self):
-        support = bindings.support_inputs()
-        self.assertTrue(support)
-        inputs = bindings.source_inputs(artifacts)
-        self.assertEqual({name: inputs[name] for name in support}, support)
-        self.assertEqual(
-            inputs["LICENSE"], hashlib.sha256((ROOT / "LICENSE").read_bytes()).hexdigest()
-        )
-
-    def test_windows_package_uses_x64_asset_and_isolated_x64_consumer(self):
-        with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory)
-            library = output / "configuration_storage.dll"
-            library.write_bytes(b"selected native bytes")
-            version = windows.tomllib.loads((ROOT / "Cargo.toml").read_text())["workspace"][
-                "package"
-            ]["version"]
-            package = output / "packages" / f"{bindings.PACKAGE}.{version}.nupkg"
-
-            def pack(*args, **kwargs):
-                package.write_bytes(b"accepted package")
-
-            native, dotnet, nuget = Mock(), Mock(), Mock()
-            native.stage_native.return_value = output / "native/win-x64/configuration_storage.dll"
-            dotnet.pack_project.side_effect = pack
-            modules = {"artifacts": native, "dotnet": dotnet, "nuget": nuget}
-            with patch.object(bindings, "load", side_effect=modules.__getitem__):
-                observed = bindings.pack_and_consume("dotnet", library, "win-x64", {}, output)
-            self.assertEqual(
-                observed, {package.name: hashlib.sha256(package.read_bytes()).hexdigest()}
-            )
-            self.assertEqual(
-                dotnet.pack_project.call_args.kwargs["properties"][
-                    "ConfigurationStorageRuntimeIdentifier"
-                ],
-                "win-x64",
-            )
-            self.assertEqual(
-                nuget.audit_package.call_args.kwargs["runtime_files"],
-                {"runtimes/win-x64/native/configuration_storage.dll": library},
-            )
-            self.assertEqual(nuget.run_isolated_consumer.call_args.kwargs["runtime"], "win-x64")
+    def test_combined_package_carries_all_runtime_assets(self):
+        with (
+            patch.object(pack_nuget, "xcframework") as framework,
+            patch.object(pack_nuget, "load") as load,
+        ):
+            load.side_effect = {"artifacts": artifacts, "nuget": Mock()}.__getitem__
+            pack_nuget.pack(("osx-arm64", "osx-x64", "win-x64"))
+        native = load.side_effect("nuget").pack_native
+        native.assert_called_once()
+        self.assertEqual(native.call_args.args, (framework.return_value,))
+        self.assertEqual(native.call_args.kwargs["runtimes"], ("osx-arm64", "osx-x64", "win-x64"))
+        package_files = native.call_args.kwargs["package_files"]
+        self.assertIn("licenses/Rust/LICENSE-MIT", package_files)
+        self.assertNotIn("licenses/registry-notices.json", package_files)
 
 
 if __name__ == "__main__":

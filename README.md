@@ -79,18 +79,18 @@ destroying its result owner. Update the C header, library and bindings together.
 
 ## Install from .NET
 
-Obtain the `NaviApps.ConfigurationStorage` package for your .NET 10
-process. Use `osx-arm64` or `osx-x64` on macOS 26 or later and `win-x64` with
-x64 .NET on Windows 11, including x64 processes on Windows ARM64.
-Add the supplied package's directory as a local NuGet source and reference its version:
+The `NaviApps.ConfigurationStorage` NuGet package supports .NET 10 on macOS 26
+or later and x64 .NET on Windows 11, including x64 processes on Windows ARM64.
+Obtain the combined package from the [distribution workflow](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
+at the source revision you reviewed. Add its directory as a local NuGet source
+and reference the version in the package filename:
 
 ```xml
 <PackageReference Include="NaviApps.ConfigurationStorage" Version="PACKAGE_VERSION" />
 ```
 
-Each package carries one native runtime. All variants share the same ID and
-version. Use separate local feeds and NuGet package caches when restoring
-multiple variants. See the [.NET API guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md).
+The combined package carries `osx-arm64`, `osx-x64` and `win-x64`. .NET selects
+the native library for the process. See the [.NET API guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md).
 
 ## Responsibility
 

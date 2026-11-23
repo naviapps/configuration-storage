@@ -6,20 +6,24 @@ interpretation, editing, save timing and UI.
 
 ## Install
 
-Use .NET 10 and a `NaviApps.ConfigurationStorage` package for your
-process. Use `osx-arm64` or `osx-x64` on macOS 26 or later. Use `win-x64` with
-x64 .NET on Windows 11, including when Windows ARM64 runs the x64 process.
-Add the supplied package's directory as a local NuGet source and reference its version:
+Use .NET 10 and obtain the `NaviApps.ConfigurationStorage` package from the
+[SDK distribution checks](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
+for your chosen source revision. The combined package includes `osx-arm64` and
+`osx-x64` for macOS 26 or later and `win-x64` for Windows 11, including x64 .NET
+on Windows ARM64. Add the unpacked artifact directory as a local NuGet source:
+
+```sh
+dotnet nuget add source /absolute/path/to/sdk-packages --name configuration-storage
+```
+
+Reference the version in the package filename:
 
 ```xml
 <PackageReference Include="NaviApps.ConfigurationStorage" Version="PACKAGE_VERSION" />
 ```
 
-Replace `PACKAGE_VERSION` with the supplied package version. Each package includes
-one runtime's native library and retained notices. All variants share the same
-package ID and version. Use separate local feeds and NuGet package caches when
-restoring multiple variants. Consumers need the package and the matching .NET
-runtime.
+The matching .NET process loads the corresponding native asset from the same
+package. Keep the package and its receipt together so you can verify its digest.
 
 ## Open and save opaque snapshots
 
@@ -305,9 +309,10 @@ Use the installed x64 executable's path on your machine. The driver builds the
 x64 Rust DLL and bundled SQLite with the static CRT, verifies the native exports
 and retained notices, and runs Rust checks, C ABI and standalone C fixtures,
 managed tests and an installed NuGet consumer. That consumer restores the `win-x64` package
-from an isolated local feed. The verified package and its hash receipt go to
+from an isolated local feed. The Windows-only test package and its hash receipt go to
 `build/windows/win-x64`, or to `win-x64` under `VM_RUNNER_ARTIFACTS_DIR` when that
-variable is set. See the [development guide](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md)
+variable is set. The shared distribution workflow uses the accepted x64 DLL and
+verified macOS framework to generate the combined package. See the [development guide](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md)
 for CI prerequisites and notice policy.
 
 ## Optional client write coalescing

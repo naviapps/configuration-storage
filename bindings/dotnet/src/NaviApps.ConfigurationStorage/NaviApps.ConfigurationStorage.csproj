@@ -6,29 +6,28 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>NaviApps.ConfigurationStorage</PackageId>
     <Version>0.1.0</Version>
-    <Description>Private opaque configuration storage backed by the Rust configuration_storage library.</Description>
+    <Description>Opaque transactional configuration storage backed by Rust and SQLite.</Description>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>false</PublishRepositoryUrl>
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <DebugType>none</DebugType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable Condition="'$(SdkNativeRuntimeAssets)' == ''">false</IsPackable>
     <PathMap>$(MSBuildProjectDirectory)=/configuration-storage/dotnet</PathMap>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../../../LICENSE" Pack="true" PackagePath="/" />
     <None Include="../../README.md" Pack="true" PackagePath="/README.md" />
     <None Include="$(ConfigurationStorageNativeLibrary)" Condition="'$(ConfigurationStorageNativeLibrary)' != ''"
-          CopyToOutputDirectory="Always" Pack="true"
-          PackagePath="runtimes/$(ConfigurationStorageRuntimeIdentifier)/native/%(Filename)%(Extension)">
+          CopyToOutputDirectory="Always" Pack="false">
       <Link Condition="'$(OS)' == 'Windows_NT'">configuration_storage.dll</Link>
       <Link Condition="'$(OS)' != 'Windows_NT'">libconfiguration_storage.dylib</Link>
     </None>
+    <None Include="$(SdkNativeRuntimeAssets)/**/*" Condition="'$(SdkNativeRuntimeAssets)' != ''"
+          Pack="true" PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../../../ThirdParty/**/*" Exclude="../../../../ThirdParty/**/.DS_Store;../../../../ThirdParty/**/registry-notices.json" Pack="true" PackagePath="licenses/" />
   </ItemGroup>
-  <Target Name="RequireConfigurationStorageNativeAsset" BeforeTargets="GenerateNuspec">
-    <Error Condition="'$(ConfigurationStorageRuntimeIdentifier)' == '' or '$(ConfigurationStorageNativeLibrary)' == ''" Text="Follow the package acceptance instructions in bindings/dotnet/README.md to supply a source-built native library." />
-    <Error Condition="'$(ConfigurationStorageRuntimeIdentifier)' != 'osx-arm64' and '$(ConfigurationStorageRuntimeIdentifier)' != 'osx-x64' and '$(ConfigurationStorageRuntimeIdentifier)' != 'win-x64'" Text="ConfigurationStorage package production supports osx-arm64, osx-x64 and win-x64." />
-    <Error Condition="!Exists('$(ConfigurationStorageNativeLibrary)')" Text="The source-built configuration_storage native library is missing." />
-  </Target>
 </Project>

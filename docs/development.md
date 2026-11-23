@@ -131,9 +131,10 @@ SDK tests on Windows x64.
 [sdk-checks.toml](../sdk-checks.toml) describes the SDK's fixtures and
 documentation checks. [sdk-distribution.toml](../sdk-distribution.toml) lists the
 release checks for each platform. The [public SDK Tooling workflow](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
-verifies the native receipts and standalone
-Swift, Rust, C and .NET consumers, including a locally built `win-x64` NuGet
-package. Dispatch it with the full commit SHA of the SDK on `main`:
+verifies the native receipts and standalone Swift, Rust and C consumers. It
+packs the verified macOS and Windows native libraries in one NuGet package and
+uses the same package bytes for each independent .NET consumer. Dispatch it
+with the full commit SHA of the SDK on `main`:
 
 ```sh
 gh workflow run check-sdk-distribution.yml -R naviapps/sdk-tooling \

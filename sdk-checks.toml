@@ -14,3 +14,8 @@ header = "configuration_storage.h"
 packages = ["configuration-storage-ffi"]
 projects = ["bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj"]
 arguments = ["--native"]
+
+[nuget]
+package_id = "NaviApps.ConfigurationStorage"
+fixtures = ["fixtures/consumers/dotnet/Program.cs"]
+windows_x64 = true
