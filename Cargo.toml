@@ -1,0 +1,27 @@
+[workspace]
+members = ["crates/core", "crates/ffi"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+repository = "https://github.com/naviapps/configuration-storage"
+rust-version = "1.99"
+
+[workspace.dependencies]
+base64 = "0.23.1"
+configuration-storage = { path = "crates/core" }
+rusqlite = { version = "0.41.1", features = ["bundled", "backup"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+sha2 = "0.11.1"
+tempfile = "3"
+uuid = { version = "1", features = ["v4"] }
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "none"

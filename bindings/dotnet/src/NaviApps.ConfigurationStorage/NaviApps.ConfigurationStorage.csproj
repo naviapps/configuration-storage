@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageId>NaviApps.ConfigurationStorage</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Private opaque configuration storage backed by the Rust configuration_storage library.</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>false</PublishRepositoryUrl>
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <DebugType>none</DebugType>
+    <PathMap>$(MSBuildProjectDirectory)=/configuration-storage/dotnet</PathMap>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../../../LICENSE" Pack="true" PackagePath="/" />
+    <None Include="../../README.md" Pack="true" PackagePath="/README.md" />
+    <None Include="$(ConfigurationStorageNativeLibrary)" Condition="'$(ConfigurationStorageNativeLibrary)' != ''" Pack="true" PackagePath="runtimes/$(ConfigurationStorageRuntimeIdentifier)/native/%(Filename)%(Extension)" />
+    <None Include="../../../../ThirdParty/**/*" Exclude="../../../../ThirdParty/**/.DS_Store;../../../../ThirdParty/**/registry-notices.json" Pack="true" PackagePath="licenses/" />
+  </ItemGroup>
+  <Target Name="RequireConfigurationStorageNativeAsset" BeforeTargets="GenerateNuspec">
+    <Error Condition="'$(ConfigurationStorageRuntimeIdentifier)' == '' or '$(ConfigurationStorageNativeLibrary)' == ''" Text="Use tools/bindings.py or tools/windows.py with a source-built native library." />
+    <Error Condition="'$(ConfigurationStorageRuntimeIdentifier)' != 'osx-arm64' and '$(ConfigurationStorageRuntimeIdentifier)' != 'osx-x64' and '$(ConfigurationStorageRuntimeIdentifier)' != 'win-x64'" Text="ConfigurationStorage package production supports osx-arm64, osx-x64 and win-x64." />
+    <Error Condition="!Exists('$(ConfigurationStorageNativeLibrary)')" Text="The source-built configuration_storage native library is missing." />
+  </Target>
+</Project>
