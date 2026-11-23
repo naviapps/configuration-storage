@@ -6,7 +6,7 @@ For SDK installation and explicit writes, see the [overview](../README.md).
 
 ## Setup and source layout
 
-Use Git, mise and a full Xcode installation providing Swift 6.4 or newer, SwiftPM,
+Use Git, mise and a full Xcode installation providing Swift 6.3 or newer, SwiftPM,
 DocC and Apple build tools on macOS 26 or later. `mise.toml` selects the developer
 Python, .NET and static tools; `rust-toolchain.toml` selects Rust 1.99.1, rustfmt
 and Clippy. Review those manifests and `tools/tooling-sources.json`, then prepare
@@ -123,9 +123,9 @@ Choose an unused evidence path outside the checkout for the report and its
 companion lock and metadata files. See [shared consumer verification](https://github.com/naviapps/sdk-tooling/blob/main/docs/REFERENCE.md#consumer-verification)
 for the isolation and evidence mechanisms.
 
-The [macOS workflow](../.github/workflows/check-macos.yml) uses GitHub's Xcode 27
-runner for Rust and strict Swift tests. The
-[Windows workflow](../.github/workflows/check-windows-x64.yml) uses GitHub's Windows
+The [macOS workflow](../.github/workflows/check-macos.yml) uses Xcode 27 for the
+full SDK checks and runs strict Swift tests with Xcode 26.6 on macOS 26. The
+[Windows workflow](../.github/workflows/check-windows.yml) uses GitHub's Windows
 x64 runner. CI verifies native receipts and standalone Swift, Rust, C and .NET
 consumers, including a locally built `win-x64` NuGet package. Use an owned
 environment for additional macOS runtime-version or Windows ARM64 emulation

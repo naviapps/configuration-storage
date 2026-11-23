@@ -2,7 +2,7 @@
 
 Opaque, transactional configuration snapshots backed by a Rust engine and a synchronous C ABI.
 The Swift product and module are `ConfigurationStorage`; its native framework is
-`CConfigurationStorage.xcframework`. Swift requires Swift 6.4 and macOS 26 or later.
+`CConfigurationStorage.xcframework`. Swift requires Swift 6.3 and macOS 26 or later.
 The Swift and .NET bindings require native ABI 13.
 
 ## Documentation
@@ -23,7 +23,7 @@ published revision and select the production product. Replace
 the published SDK revision you have reviewed; it is a placeholder, not a branch or tag.
 
 ```swift
-// swift-tools-version: 6.4
+// swift-tools-version: 6.3
 import PackageDescription
 
 let package = Package(
@@ -45,7 +45,7 @@ let package = Package(
 ```
 
 Place your Swift source in `Sources/StorageClient/`, import `ConfigurationStorage`,
-and run `swift build` from your package root with Swift 6.4 on macOS 26 or later.
+and run `swift build` from your package root with Swift 6.3 or newer on macOS 26 or later.
 SwiftPM consumes the tracked native framework. Ordinary consumers do not run
 `tools/`, install Rust or rebuild native artifacts.
 
