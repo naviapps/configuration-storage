@@ -6,7 +6,7 @@ CBINDGEN := cbindgen --config crates/ffi/cbindgen.toml crates/ffi/src/lib.rs
 C_HEADER := crates/ffi/include/configuration_storage.h
 
 .DEFAULT_GOAL := check
-.PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify check-header generate-header lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings docs clean
+.PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify check-header generate-header lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings clean
 
 help:
 	@echo 'check          Source lint, Rust/Swift/managed tests and external Swift consumer (default)'
@@ -18,7 +18,6 @@ help:
 	@echo 'test-distribution-tools     Run SDK-owned build and fixture policy tests'
 	@echo 'test-consumer  Run the external SwiftPM consumer'
 	@echo 'test-installed-consumers  Run standalone Git Rust and installed macOS C clients'
-	@echo 'docs           Validate DocC against the owned public Swift symbols'
 	@echo 'test           Run strict Swift tests'
 	@echo 'test-c         Verify native receipt and run the C ABI consumer'
 	@echo 'test-bindings  Verify native receipt; run C/.NET tests and local NuGet consumer (.NET 10 required)'
@@ -83,9 +82,6 @@ test-bindings: native-verify
 
 test-distribution-tools:
 	$(SDK_TOOLING) python -m unittest discover -s distribution/tests -v
-
-docs:
-	$(SDK_TOOLING) docs
 
 .PHONY: format
 format:

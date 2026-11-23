@@ -3,7 +3,6 @@
 
 import argparse
 import hashlib
-import json
 import os
 import re
 import subprocess
@@ -14,7 +13,13 @@ from pathlib import Path
 from sdk_tooling.adapters import git, load
 from sdk_tooling.cargo_build import compile_units, verify_units
 from sdk_tooling.native_plan import ffi_product
-from sdk_tooling.windows_delivery import RID, TARGET, X64Acceptance
+from sdk_tooling.windows_delivery import (
+    RID,
+    TARGET,
+    X64Acceptance,
+    locked_fetch_args,
+    publish_package_evidence,
+)
 
 from distribution import verify_bindings as bindings
 
@@ -72,50 +77,6 @@ def checkout_commit(env):
     return commit
 
 
-def seal_package(source, destination, receipt, artifact_tooling):
-    """Replace only an SDK-owned output directory after the package and receipt agree."""
-    packages = receipt["packages"]
-    names = {*packages, RECEIPT}
-    if (
-        destination.parent.is_symlink()
-        or destination.parent.is_junction()
-        or destination.is_symlink()
-        or destination.is_junction()
-        or (
-            destination.exists()
-            and (
-                not destination.is_dir()
-                or any(
-                    item.name not in names or not item.is_file() or item.is_symlink()
-                    for item in destination.iterdir()
-                )
-            )
-        )
-    ):
-        raise ValueError("Windows x64 output contains unrelated files")
-
-    def verify_pair(directory):
-        if (
-            {item.name for item in directory.iterdir()} != names
-            or json.loads((directory / RECEIPT).read_bytes()) != receipt
-            or any(
-                hashlib.sha256((directory / name).read_bytes()).hexdigest() != digest
-                for name, digest in packages.items()
-            )
-        ):
-            raise ValueError("Windows x64 package and acceptance receipt differ")
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(dir=destination.parent, prefix="x64-output-") as directory:
-        stage = Path(directory) / RID
-        stage.mkdir()
-        for name in packages:
-            (stage / name).write_bytes((source / name).read_bytes())
-        artifact_tooling.write_json(stage / RECEIPT, receipt)
-        verify_pair(stage)
-        artifact_tooling.publish(stage, destination, lambda: verify_pair(destination))
-
-
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args(argv)
@@ -152,7 +113,7 @@ def main(argv=None):
         candidate = Path(directory)
         before = (checkout_commit(env), bindings.source_inputs(artifacts))
         # The committed macOS artifact and parent-maintained notices are read-only here.
-        bindings.run("cargo", "fetch", "--locked", "--target", TARGET, env=env)
+        bindings.run(*locked_fetch_args(notice_targets=()), env=env)
         cargo = load("cargo")
         verify_notices(cargo, env)
         build_env = build_environment(env, candidate / "target")
@@ -278,7 +239,12 @@ def main(argv=None):
             ],
             "notRun": ["host application integration"],
         }
-        seal_package(candidate / "packages", artifact_root / RID, receipt, artifacts)
+        publish_package_evidence(
+            candidate / "packages",
+            receipt,
+            receipt_name=RECEIPT,
+            destination=artifact_root / RID,
+        )
     print(f"Windows {RID} static-CRT acceptance passed on {host} ({receipt['executionMode']}).")
 
 

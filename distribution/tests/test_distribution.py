@@ -1,7 +1,6 @@
 """ConfigurationStorage ABI fixture and package acceptance boundaries."""
 
 import hashlib
-import json
 import os
 import sys
 import tempfile
@@ -171,27 +170,6 @@ class SDKToolPolicyTests(unittest.TestCase):
                 {"runtimes/win-x64/native/configuration_storage.dll": library},
             )
             self.assertEqual(nuget.run_isolated_consumer.call_args.kwargs["runtime"], "win-x64")
-
-    def test_x64_output_rejects_a_changed_package_and_preserves_prior_pair(self):
-        with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory)
-            source = output / "candidate"
-            source.mkdir()
-            package = source / "NaviApps.ConfigurationStorage.0.1.0.nupkg"
-            package.write_bytes(b"accepted package")
-            receipt = {"packages": {package.name: hashlib.sha256(package.read_bytes()).hexdigest()}}
-            destination = output / "win-x64"
-            windows.seal_package(source, destination, receipt, artifacts)
-            self.assertEqual(json.loads((destination / windows.RECEIPT).read_bytes()), receipt)
-            package.write_bytes(b"unreviewed bytes")
-            with self.assertRaisesRegex(ValueError, "receipt differ"):
-                windows.seal_package(source, destination, receipt, artifacts)
-            self.assertEqual((destination / package.name).read_bytes(), b"accepted package")
-            sentinel = destination / "unowned.txt"
-            sentinel.write_bytes(b"unrelated data")
-            with self.assertRaisesRegex(ValueError, "unrelated files"):
-                windows.seal_package(source, destination, receipt, artifacts)
-            self.assertEqual(sentinel.read_bytes(), b"unrelated data")
 
 
 if __name__ == "__main__":

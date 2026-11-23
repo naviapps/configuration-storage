@@ -6,9 +6,9 @@ For SDK installation and explicit writes, see the [overview](../README.md).
 ## Setup and source layout
 
 Use Git, mise and a full Xcode installation providing Swift 6.3 or newer, SwiftPM,
-DocC and Apple build tools on macOS 26 or later. `mise.toml` selects the developer
-Python, .NET and static tools; `rust-toolchain.toml` selects Rust 1.99.1, rustfmt
-and Clippy. Review those manifests, then prepare the pinned tools before running
+and Apple build tools on macOS 26 or later. `mise.toml` selects developer Python
+and static tools. `global.json` pins .NET. `rust-toolchain.toml` selects Rust 1.99.1,
+rustfmt and Clippy. Review those manifests, then prepare the pinned tools before running
 checks:
 
 ```sh
@@ -25,8 +25,8 @@ Contributor checks use the pinned tools and the tracked framework. The shared
 commands fetch the public SDK Tooling revision in [mise.toml](../mise.toml)
 on first use. SwiftPM and NuGet installation use the distributed SDK.
 
-Swift sources and tests live in `Sources/` and `Tests/`; the public Swift guide is
-in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live in
+Swift sources and tests live in `Sources/` and `Tests/`. See
+[Swift usage](../README.md#explicit-writes) for the public API. Rust crates live in
 `crates/`, with C ABI tests in `crates/ffi/tests/c/`. .NET projects use
 `bindings/dotnet/src/` and `bindings/dotnet/tests/`. Packaging checks are in
 `distribution/` and independent consumers are in `fixtures/consumers/`. Cross-language guides are
@@ -54,7 +54,6 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | `make test-c`                   | Native verification and disposable-store C ABI consumer                                                 | Yes            |
 | `make test-bindings`            | Native verification, C/.NET tests and clean local NuGet consumer                                        | Yes            |
 | `make test-distribution-tools`  | SDK build/fixture policy tests                                                                          | Yes            |
-| `make docs`                     | Swift public-symbol compilation and DocC conversion with warnings as errors                             | No             |
 | `make test-installed-consumers` | Independent Git Rust and installed C clients using fresh consumer directories                           | Yes            |
 | `make acceptance`               | `check` and `check-distribution`                                                                        | Yes            |
 
@@ -148,8 +147,8 @@ in [mise.toml](../mise.toml).
 mise exec -- make check-distribution
 ```
 
-The shared lint, Swift consumer, and DocC commands use the pinned public package
-directly. The installed Rust and C checks also run through that package.
+The shared lint and installed Swift, Rust and C consumer checks use the pinned
+public package.
 
 See the [.NET guide](../bindings/dotnet/README.md#windows-x64-package-acceptance)
 for the local Windows command, prerequisites and package output. Use an owned

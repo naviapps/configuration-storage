@@ -29,9 +29,11 @@ Any changed raw state or stale/cross-purpose token reports `backupChanged`, requ
 fresh preparation and validation. Preparing with a stale expected generation reports
 `conflict`. Preparation never rotates a checkpoint or advances an editing baseline.
 The nested `preparation.backup.token` authorizes restoration only and cannot authorize rotation.
-File modification dates preserve signed Unix seconds, including fractional times
-before 1970. A valid file is not classified as corrupt solely because of its date;
-the date is metadata and never authorizes a write or replaces integrity validation.
+Backups, candidates and recovery copies expose signed fractional Unix seconds
+through `modifiedAtUnixSeconds`, including dates before 1970. The Swift values
+use that field for equality and Codable. Use `modifiedAt` for a Foundation date
+to display. A file timestamp describes the filesystem and does not indicate
+when the host accepted an edit.
 The opaque token binds both the verified backup and the current raw selection, including
 its marker and SQLite family. `readBackup()` verifies a private copy of the selected
 backup against that raw state and rechecks the state before returning the backup and token.

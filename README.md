@@ -7,8 +7,7 @@ The Swift and .NET bindings require native ABI 14.
 
 ## Documentation
 
-- [Swift API guide](https://github.com/naviapps/configuration-storage/blob/main/Sources/ConfigurationStorage/ConfigurationStorage.docc/ConfigurationStorage.md):
-  store admission, write generations, recovery and client write coalescing.
+- [Swift usage](#explicit-writes) and [client write coalescing](#optional-client-write-coalescing).
 - [Backup and recovery](https://github.com/naviapps/configuration-storage/blob/main/docs/RECOVERY.md): checkpoint review, retained snapshots,
   raw recovery evidence and the portable-copy format.
 - [.NET API guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md): managed ownership, cancellation and packaging.
@@ -124,10 +123,18 @@ let saved = try await store.save(
   payload: encodedDraft)
 ```
 
-Construction performs no I/O; the first actor operation validates the configuration
-and opens the store. Use an absolute local file URL without `..` components.
-The managed root, its subdirectories and files reject symbolic links. The payload
-limit defaults to 16 MiB and accepts 1 byte through 64 MiB.
+Construction performs no I/O. The first actor operation validates the configuration
+and opens the store. Use an absolute file URL without `..` components. Store and
+recovery-copy URLs accept an empty host or `localhost` and reject user information,
+ports, queries, fragments, encoded slashes and NUL characters. Use
+`URL(fileURLWithPath:)` for literal question marks or hashes. Mounted volumes use
+their local file paths.
+
+The engine resolves existing parent aliases before creating missing directories,
+and an open handle keeps the resolved root if an alias changes. The managed root,
+its subdirectories and files reject symbolic links. Payload limits default to
+16 MiB and accept 1 byte through 64 MiB. Oversized save and restore requests fail
+before encoding or opening a lazy store.
 The .NET equivalents are `ConfigurationStore.CreateLazy` and
 `ConfigurationStore.CreateLazyExisting`.
 
@@ -144,8 +151,10 @@ To open or claim a store immediately, await `ConfigurationStore.open(configurati
 store. An initialized empty payload is `Data()` with a generation. Keep the generation
 associated with the snapshot being edited and pass it unchanged to `save`; `nil`
 only initializes an uninitialized store. A stale generation fails with `.conflict`.
-A later `load()` never advances the host's editing baseline. Saving unchanged bytes
-with the current generation retains it.
+A later `load()` never advances the host's editing baseline. The opaque generation
+depends on the stored write UUID, owner and verified payload digest. A changed
+payload with a matching digest changes that generation even if the write UUID
+is unchanged. Saving unchanged bytes with the current generation retains it.
 
 Unreadable, foreign, missing selected or newer-format data must not be replaced
 with a seed. Retained generations, backups and raw recovery evidence also prevent
@@ -158,10 +167,8 @@ delivers its result, including a confirmed write after late cancellation.
 
 Backup rotation requires `prepareBackup`, host validation of its held backup or
 absence, and `createBackup` with the preparation token. Restore uses a separate
-backup token. The [backup and recovery guide](https://github.com/naviapps/configuration-storage/blob/main/docs/RECOVERY.md)
-covers review, damaged checkpoints, retained snapshots and portable copies;
-the [Swift API guide](https://github.com/naviapps/configuration-storage/blob/main/Sources/ConfigurationStorage/ConfigurationStorage.docc/ConfigurationStorage.md)
-details admission, paths and generation/token behavior.
+backup token. The [backup and recovery guide](docs/RECOVERY.md) covers review,
+damaged checkpoints, retained snapshots and portable copies.
 
 ## Optional client write coalescing
 
@@ -170,7 +177,11 @@ immutable pending snapshots without starting a scheduler. Enqueue never writes;
 explicit flushes share one writer, retain current failures for retry and prevent
 obsolete failures from restoring old edits. Hosts choose debounce, flush and retry
 timing. Construct Swift queues with `try SnapshotSaveQueue(commit:)` and propagate
-initialization failure before accepting edits. See the language API guides for details.
+an ABI mismatch or invalid native response before accepting edits. Swift
+`SnapshotSaveState` tracks client revisions and unsaved changes independently of
+store generations. Cancelling a flush does not cancel a commit already in flight.
+Revision exhaustion leaves pending work intact, so the host must retain the
+rejected edit.
 
 ## Test fixtures
 
