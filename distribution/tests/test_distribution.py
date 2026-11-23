@@ -11,9 +11,6 @@ from distribution import pack_nuget
 from distribution import verify_bindings as bindings
 from distribution import verify_windows as windows
 
-ROOT = Path(__file__).resolve().parents[2]
-artifacts = bindings.load("artifacts")
-
 
 class SDKToolPolicyTests(unittest.TestCase):
     def test_c_test_owns_and_removes_only_disposable_child(self):
@@ -100,11 +97,9 @@ class SDKToolPolicyTests(unittest.TestCase):
     def test_combined_package_carries_all_runtime_assets(self):
         with (
             patch.object(pack_nuget, "xcframework") as framework,
-            patch.object(pack_nuget, "load") as load,
+            patch.object(pack_nuget.load("nuget"), "pack_native") as native,
         ):
-            load.side_effect = {"artifacts": artifacts, "nuget": Mock()}.__getitem__
             pack_nuget.pack(("osx-arm64", "osx-x64", "win-x64"))
-        native = load.side_effect("nuget").pack_native
         native.assert_called_once()
         self.assertEqual(native.call_args.args, (framework.return_value,))
         self.assertEqual(native.call_args.kwargs["runtimes"], ("osx-arm64", "osx-x64", "win-x64"))

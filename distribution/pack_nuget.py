@@ -20,15 +20,10 @@ def pack(runtimes, *, environment=None):
     if not runtimes or set(runtimes) - set(RUNTIMES):
         raise ValueError("ConfigurationStorage supports osx-arm64, osx-x64 and win-x64")
     native = ffi_product(ROOT) if set(runtimes) == {RID} else xcframework(ROOT)
+    nuget = load("nuget")
     files = {"LICENSE": ROOT / "LICENSE", "README.md": ROOT / "bindings/dotnet/README.md"}
-    files.update(
-        {
-            "licenses/" + path.relative_to(ROOT / "ThirdParty").as_posix(): path
-            for path in load("artifacts").files(ROOT / "ThirdParty")
-            if path.name not in (".DS_Store", "registry-notices.json")
-        }
-    )
-    return load("nuget").pack_native(
+    files.update(nuget.retained_notice_files(ROOT / "ThirdParty", "licenses"))
+    return nuget.pack_native(
         native,
         project=PROJECT,
         package_files=files,
