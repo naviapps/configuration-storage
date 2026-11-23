@@ -111,7 +111,7 @@ If your checkout is shallow, run the driver with a complete local repository or
 bundle containing its exact commit:
 
 ```sh
-mise run sdk-tooling -- installed-consumers \
+mise run sdk-tooling -- rust-c-consumers \
   --git-source /absolute/verified/configuration-storage.bundle \
   --evidence /absolute/owned-artifacts/storage-installed-consumers.json
 ```
