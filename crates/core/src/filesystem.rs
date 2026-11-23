@@ -10,6 +10,10 @@ use std::{
 };
 use uuid::Uuid;
 
+pub(crate) const GENERATION_STAGE_PREFIX: &str = ".generation-";
+pub(crate) const GENERATION_STAGE_DATABASE_PREFIX: &str = ".tmp";
+pub(crate) const GENERATION_STAGE_RANDOM_LENGTH: usize = 6;
+
 pub(crate) fn private_new_file(path: &Path) -> std::io::Result<File> {
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);
@@ -68,14 +72,18 @@ fn validate_regular_handle(
 ) -> Result<(), Failure> {
     let metadata = file.metadata().map_err(map_io)?;
     #[cfg(windows)]
-    {
-        use std::os::windows::fs::MetadataExt;
-        use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT;
-        if metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
-            return Err(Failure::new(ErrorCode::InvalidStoredData));
-        }
-    }
+    reject_reparse_point(&metadata)?;
     if !metadata.is_file() {
+        return Err(Failure::new(ErrorCode::InvalidStoredData));
+    }
+    Ok(())
+}
+
+#[cfg(windows)]
+fn reject_reparse_point(metadata: &fs::Metadata) -> Result<(), Failure> {
+    use std::os::windows::fs::MetadataExt;
+    use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT;
+    if metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
         return Err(Failure::new(ErrorCode::InvalidStoredData));
     }
     Ok(())
@@ -163,6 +171,54 @@ pub(crate) fn existing_directory(path: &Path) -> Result<(), Failure> {
     }
     Ok(())
 }
+
+/// Identifies the private layout left by a generation write before publication.
+/// The directory and its bytes remain available for manual inspection.
+pub(crate) fn is_generation_stage(entry: &fs::DirEntry) -> Result<bool, Failure> {
+    let name = entry.file_name();
+    if !name
+        .to_str()
+        .is_some_and(|name| generation_stage_name(name, GENERATION_STAGE_PREFIX))
+    {
+        return Ok(false);
+    }
+
+    let directory = entry.path();
+    existing_directory(&directory)?;
+    #[cfg(windows)]
+    reject_reparse_point(&fs::symlink_metadata(&directory)?)?;
+    let mut database_name = None::<String>;
+    let mut has_main = false;
+    for child in fs::read_dir(directory)? {
+        let child = child?;
+        let Ok(name) = child.file_name().into_string() else {
+            return Ok(false);
+        };
+        let base = ["-journal", "-wal", "-shm"]
+            .into_iter()
+            .find_map(|suffix| name.strip_suffix(suffix))
+            .unwrap_or(&name);
+        if !generation_stage_name(base, GENERATION_STAGE_DATABASE_PREFIX)
+            || database_name
+                .as_deref()
+                .is_some_and(|expected| expected != base)
+        {
+            return Ok(false);
+        }
+        drop(open_regular(&child.path())?);
+        database_name.get_or_insert_with(|| base.to_owned());
+        has_main |= name == base;
+    }
+    Ok(database_name.is_none() || has_main)
+}
+
+fn generation_stage_name(name: &str, prefix: &str) -> bool {
+    name.strip_prefix(prefix).is_some_and(|suffix| {
+        suffix.len() == GENERATION_STAGE_RANDOM_LENGTH
+            && suffix.bytes().all(|byte| byte.is_ascii_alphanumeric())
+    })
+}
+
 /// An absent backup selector may only refer to the original fixed-name layout.
 pub(crate) fn legacy_backup_only(directory: &Path) -> Result<bool, Failure> {
     for entry in fs::read_dir(directory)? {

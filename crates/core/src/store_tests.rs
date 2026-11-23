@@ -1,7 +1,7 @@
 use super::*;
 use std::cell::RefCell;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Phase {
     PreparationAdmitted,
     RotationAdmitted,
@@ -153,6 +153,14 @@ fn reconstruction_rechecks_the_previous_checkpoint_after_staging_the_new_one() {
 
 #[test]
 fn fresh_backup_failure_leaves_a_competing_write_at_the_reserved_path() {
+    for rebuild in [false, true] {
+        for mutation_phase in [Phase::FreshBackupStaged, Phase::BeforeRotationPublication] {
+            check_fresh_backup_candidate_change(rebuild, mutation_phase);
+        }
+    }
+}
+
+fn check_fresh_backup_candidate_change(rebuild: bool, mutation_phase: Phase) {
     let directory = tempfile::tempdir().unwrap();
     let store = ConfigurationStore::open(Configuration {
         directory: directory.path().into(),
@@ -160,31 +168,72 @@ fn fresh_backup_failure_leaves_a_competing_write_at_the_reserved_path() {
         maximum_payload_bytes: 1024,
     })
     .unwrap();
-    let saved = store.save(None, b"current checkpoint").unwrap();
+    let initial = store.save(None, b"previous checkpoint").unwrap();
+    let initial_generation = initial.generation.as_deref().unwrap();
+    let previous = if rebuild {
+        let token = store.prepare_backup(initial_generation).unwrap().token;
+        store.create_backup(initial_generation, &token).unwrap();
+        let path = store.backup_path().unwrap();
+        let bytes = fs::read(&path).unwrap();
+        Some((path, bytes))
+    } else {
+        None
+    };
+    let saved = if rebuild {
+        store
+            .save(Some(initial_generation), b"current checkpoint")
+            .unwrap()
+    } else {
+        initial.clone()
+    };
     let generation = saved.generation.as_deref().unwrap();
-    let token = store.prepare_backup(generation).unwrap().token;
+    let token = if rebuild {
+        store.prepare_backup_rebuild(generation).unwrap()
+    } else {
+        store.prepare_backup(generation).unwrap().token
+    };
     let backups = store.root().join("Backups");
+    let marker = store.root().join("active-backup");
+    let selection = fs::read(&marker).ok();
     let staged = backups.clone();
+    let previous_path = previous.as_ref().map(|(path, _)| path.clone());
     let competing = b"competing write";
     PHASE_HOOK.with(|hook| {
         *hook.borrow_mut() = Some(Box::new(move |phase| {
-            if phase == Phase::FreshBackupStaged {
-                let candidate = fs::read_dir(&staged).unwrap().next().unwrap().unwrap();
-                fs::write(candidate.path(), competing).unwrap();
+            if phase == mutation_phase {
+                let candidate = fs::read_dir(&staged)
+                    .unwrap()
+                    .map(|entry| entry.unwrap().path())
+                    .find(|path| previous_path.as_ref() != Some(path))
+                    .unwrap();
+                fs::write(candidate, competing).unwrap();
             }
         }));
     });
     let clear = ClearPhaseHook;
-    let result = store.create_backup(generation, &token);
+    let result = if rebuild {
+        store.rebuild_backup(generation, &token)
+    } else {
+        store.create_backup(generation, &token)
+    };
     drop(clear);
+    assert_eq!(
+        fs::read(marker).ok(),
+        selection,
+        "rebuild={rebuild}, mutation_phase={mutation_phase:?}, result={result:?}"
+    );
     assert_eq!(result.unwrap_err().code, ErrorCode::BackupChanged);
-    assert!(!store.root().join("active-backup").exists());
     let retained: Vec<_> = fs::read_dir(&backups)
         .unwrap()
         .map(|entry| entry.unwrap().path())
+        .filter(|path| previous.as_ref().is_none_or(|(old, _)| old != path))
         .collect();
     assert_eq!(retained.len(), 1);
     assert_eq!(fs::read(&retained[0]).unwrap(), competing);
+    if let Some((path, bytes)) = previous {
+        assert_eq!(fs::read(path).unwrap(), bytes);
+        assert_eq!(store.read_backup().unwrap().snapshot, initial);
+    }
     assert_eq!(store.load().unwrap(), saved);
 }
 

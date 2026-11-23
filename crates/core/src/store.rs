@@ -183,12 +183,16 @@ impl ConfigurationStore {
                 let directory = self.root().join(name);
                 if filesystem::exists(&directory)? {
                     filesystem::existing_directory(&directory)?;
-                    if fs::read_dir(directory)?.any(|entry| {
-                        name != "Generations"
-                            || entry.map_or(true, |entry| {
-                                reservation != Some(entry.file_name().as_os_str())
-                            })
-                    }) {
+                    for entry in fs::read_dir(directory)? {
+                        if name == "Generations" {
+                            let entry =
+                                entry.map_err(|_| Failure::new(ErrorCode::InvalidStoredData))?;
+                            if reservation == Some(entry.file_name().as_os_str())
+                                || filesystem::is_generation_stage(&entry)?
+                            {
+                                continue;
+                            }
+                        }
                         return Err(Failure::new(ErrorCode::InvalidStoredData));
                     }
                 }
@@ -589,11 +593,7 @@ impl ConfigurationStore {
             Some(_) => Some(captured.path),
             None => None,
         };
-        self.publish_backup(&source, &current, replace.as_deref(), |reservation| {
-            #[cfg(test)]
-            tests::phase(tests::Phase::BeforeRotationPublication);
-            validate(reservation)
-        })
+        self.publish_backup(&source, &current, replace.as_deref(), validate)
     }
 
     fn backup_source(&self, expected_generation: &str) -> Result<(PathBuf, Snapshot), Failure> {
@@ -630,6 +630,8 @@ impl ConfigurationStore {
         if let Some(destination) = replace {
             // Ordinary checkpoint rotation replaces only a verified healthy
             // selection. Reconstruction always takes the fresh-file path below.
+            #[cfg(test)]
+            tests::phase(tests::Phase::BeforeRotationPublication);
             validate(None)?;
             filesystem::atomic_replace(&temporary, destination)?;
             return self.read_backup_locked();
@@ -639,19 +641,21 @@ impl ConfigurationStore {
         let id = Uuid::new_v4().to_string();
         let filename = format!("{id}.sqlite");
         let destination = directory.join(&filename);
-        temporary
-            .persist_noclobber(&destination)
-            .map_err(|error| error.error)?;
+        filesystem::persist_new(temporary, &destination)?;
         let marker = self.root().join("active-backup");
         let result = (|| {
             filesystem::sync_directory(&directory)?;
             let selector = filesystem::staged_file(&marker, id.as_bytes())?.into_temp_path();
             #[cfg(test)]
             tests::phase(tests::Phase::FreshBackupStaged);
+            #[cfg(test)]
+            tests::phase(tests::Phase::BeforeRotationPublication);
+            validate(Some(OsStr::new(&filename)))?;
+            // The revision excludes the reserved file, so verify it after the
+            // approval recheck and immediately before selecting it.
             if !Self::fresh_database_matches(&destination, staged_digest)? {
                 return Err(Failure::new(ErrorCode::BackupChanged));
             }
-            validate(Some(OsStr::new(&filename)))?;
             filesystem::atomic_replace(&selector, &marker)?;
             let published = self.read_backup_locked()?;
             if published.snapshot != *current {
@@ -898,10 +902,13 @@ impl ConfigurationStore {
         let id = Uuid::new_v4().to_string();
         let candidate = directory.join(format!("{id}.sqlite"));
         let staging = tempfile::Builder::new()
-            .prefix(".generation-")
+            .prefix(filesystem::GENERATION_STAGE_PREFIX)
+            .rand_bytes(filesystem::GENERATION_STAGE_RANDOM_LENGTH)
             .tempdir_in(&directory)?;
-        let named =
-            tempfile::Builder::new().make_in(staging.path(), filesystem::private_new_file)?;
+        let named = tempfile::Builder::new()
+            .prefix(filesystem::GENERATION_STAGE_DATABASE_PREFIX)
+            .rand_bytes(filesystem::GENERATION_STAGE_RANDOM_LENGTH)
+            .make_in(staging.path(), filesystem::private_new_file)?;
         let (file, temporary) = named.into_parts();
         drop(file);
         let snapshot = database::initialize(&temporary, &self.configuration, payload)?;

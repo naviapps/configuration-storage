@@ -55,6 +55,11 @@ Before an initial save, Rust rechecks that the root still has no selected or
 retained data and publishes the first selector without replacing an existing entry.
 A competing initialization reports `conflict`. Retained data without a valid
 selection reports `invalidStoredData` and requires an explicit recovery decision.
+An interrupted write can leave private `.generation-*` staging directories in
+`Generations`. A first-save retry can proceed past empty staging directories or
+one temporary SQLite family per directory with the reserved names. The original
+staging bytes stay in place and can be copied for manual inspection. Unexpected
+entries or a published UUID database with no selector still require explicit recovery.
 Before explicit restoration replaces an existing `active-generation`, Rust retains
 its exact raw selector family, including malformed, non-text or oversized bytes.
 The retained selector must match the selector bound to the caller's restore

@@ -38,6 +38,162 @@ fn family_bytes(database: &Path) -> [Option<Vec<u8>>; 4] {
 }
 
 #[test]
+fn first_save_retries_after_abandoned_private_staging() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().join("store");
+    let writer = store(&root);
+    let stages = root.join("Generations");
+    let empty = stages.join(".generation-AbC123");
+    let incomplete = stages.join(".generation-DeF456");
+    fs::create_dir_all(&empty).unwrap();
+    fs::create_dir(&incomplete).unwrap();
+    let database = incomplete.join(".tmpGhI789");
+    fs::write(&database, b"interrupted database bytes").unwrap();
+    fs::write(family_member(&database, "-journal"), b"unfinished journal").unwrap();
+    let evidence = family_bytes(&database);
+
+    let before = writer.load().unwrap();
+    assert_eq!(before.generation, None);
+    assert_eq!(before.payload, None);
+    assert!(
+        writer
+            .list_snapshot_candidates(64, None, None)
+            .unwrap()
+            .candidates
+            .is_empty()
+    );
+    let saved = writer.save(None, b"first accepted write").unwrap();
+
+    assert_eq!(store(&root).load().unwrap(), saved);
+    assert_eq!(
+        saved.payload.as_deref(),
+        Some(b"first accepted write".as_slice())
+    );
+    assert_eq!(family_bytes(&database), evidence);
+    assert_eq!(fs::read_dir(empty).unwrap().count(), 0);
+}
+
+#[test]
+fn first_save_rejects_entries_outside_the_private_staging_layout() {
+    let cases: &[&[&str]] = &[
+        &["arbitrary-file"],
+        &[".generation-AbC123"],
+        &[".generation-not-legacy/.tmpGhI789"],
+        &[".generation-AbC123/.tmpGhI789-journal"],
+        &[
+            ".generation-AbC123/.tmpGhI789",
+            ".generation-AbC123/unrelated",
+        ],
+        &[
+            ".generation-AbC123/.tmpGhI789",
+            ".generation-AbC123/.tmpJkL084",
+        ],
+        &[
+            ".generation-AbC123/.tmpGhI789",
+            ".generation-AbC123/.tmpJkL084-wal",
+        ],
+        &[".generation-AbC123/.tmpGhI789/unexpected-child"],
+    ];
+    for entries in cases {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().join("store");
+        let writer = store(&root);
+        let generations = root.join("Generations");
+        for entry in *entries {
+            let path = generations.join(entry);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, b"retained evidence").unwrap();
+        }
+
+        assert_eq!(
+            writer.load().unwrap_err().code,
+            ErrorCode::InvalidStoredData,
+            "{entries:?}"
+        );
+        assert_eq!(
+            writer.save(None, b"seed").unwrap_err().code,
+            ErrorCode::InvalidStoredData,
+            "{entries:?}"
+        );
+        assert!(!root.join("active-generation").exists());
+        for entry in *entries {
+            assert_eq!(
+                fs::read(generations.join(entry)).unwrap(),
+                b"retained evidence"
+            );
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn first_save_rejects_links_in_private_staging() {
+    use std::os::unix::fs::symlink;
+
+    for link_directory in [true, false] {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().join("store");
+        let writer = store(&root);
+        let outside = directory.path().join("unrelated");
+        fs::create_dir(&outside).unwrap();
+        let evidence = outside.join(".tmpGhI789");
+        fs::write(&evidence, b"outside bytes").unwrap();
+        let stage = root.join("Generations/.generation-AbC123");
+        fs::create_dir(stage.parent().unwrap()).unwrap();
+        if link_directory {
+            symlink(&outside, &stage).unwrap();
+        } else {
+            fs::create_dir(&stage).unwrap();
+            symlink(&evidence, stage.join(".tmpGhI789")).unwrap();
+        }
+
+        assert_eq!(
+            writer.load().unwrap_err().code,
+            ErrorCode::InvalidStoredData
+        );
+        assert_eq!(
+            writer.save(None, b"seed").unwrap_err().code,
+            ErrorCode::InvalidStoredData
+        );
+        assert!(!root.join("active-generation").exists());
+        assert_eq!(fs::read(evidence).unwrap(), b"outside bytes");
+    }
+}
+
+#[test]
+fn first_save_requires_explicit_recovery_once_the_generation_is_published() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().join("store");
+    let writer = store(&root);
+    let saved = writer.save(None, b"published candidate").unwrap();
+    let database = selected(&root);
+    let evidence = family_bytes(&database);
+    fs::remove_file(root.join("active-generation")).unwrap();
+    fs::create_dir(root.join("Generations/.generation-AbC123")).unwrap();
+
+    assert_eq!(
+        writer.load().unwrap_err().code,
+        ErrorCode::InvalidStoredData
+    );
+    assert_eq!(
+        writer.save(None, b"seed").unwrap_err().code,
+        ErrorCode::InvalidStoredData
+    );
+    let page = writer.list_snapshot_candidates(64, None, None).unwrap();
+    let [reference] = &page.candidates[..] else {
+        panic!("Expected the published candidate to remain available for explicit recovery");
+    };
+    assert_eq!(reference.is_selected, None);
+    let candidate = writer.read_snapshot_candidate(&reference.id).unwrap();
+    assert_eq!(candidate.snapshot, saved);
+    let payload = candidate.snapshot.payload.unwrap();
+    let token = writer.prepare_restore(&payload).unwrap();
+    let restored = writer.restore_snapshot(&payload, &token).unwrap();
+    assert_eq!(restored.payload, Some(payload));
+    assert_eq!(family_bytes(&database), evidence);
+}
+
+#[test]
 fn recovery_configuration_admission_never_probes_or_creates_paths() {
     let directory = tempfile::tempdir().unwrap();
     let missing = directory.path().join("missing-parent/copy");
