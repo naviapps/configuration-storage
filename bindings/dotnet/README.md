@@ -10,20 +10,19 @@ Use .NET 10 and obtain the `NaviApps.ConfigurationStorage` package from the
 [SDK distribution checks](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
 for your chosen source revision. The combined package includes `osx-arm64` and
 `osx-x64` for macOS 26 or later and `win-x64` for Windows 11, including x64 .NET
-on Windows ARM64. Add the unpacked artifact directory as a local NuGet source:
+on Windows ARM64. Verify the package SHA-256 against its receipt. In a new
+project directory, restore from the unpacked artifact directory:
 
 ```sh
-dotnet nuget add source /absolute/path/to/sdk-packages --name configuration-storage
+dotnet new console --framework net10.0 --no-restore
+dotnet package add NaviApps.ConfigurationStorage --version "[0.1.0]" --no-restore
+dotnet restore --source "/absolute/path/to/sdk-packages" --packages ./.nuget-packages
 ```
 
-Reference the version in the package filename:
-
-```xml
-<PackageReference Include="NaviApps.ConfigurationStorage" Version="PACKAGE_VERSION" />
-```
-
-The matching .NET process loads the corresponding native asset from the same
-package. Keep the package and its receipt together so you can verify its digest.
+Use the version in the package filename. Restore to a fresh cache directory each
+time you switch candidate builds with the same version and use
+`dotnet run --no-restore` after restoring. The .NET process loads the
+corresponding native asset from the package.
 
 ## Open and save opaque snapshots
 

@@ -82,15 +82,11 @@ destroying its result owner. Update the C header, library and bindings together.
 The `NaviApps.ConfigurationStorage` NuGet package supports .NET 10 on macOS 26
 or later and x64 .NET on Windows 11, including x64 processes on Windows ARM64.
 Obtain the combined package from the [distribution workflow](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
-at the source revision you reviewed. Add its directory as a local NuGet source
-and reference the version in the package filename:
-
-```xml
-<PackageReference Include="NaviApps.ConfigurationStorage" Version="PACKAGE_VERSION" />
-```
+at the source revision you reviewed. The [.NET installation guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md#install)
+shows how to restore that package from a local source with a fresh cache.
 
 The combined package carries `osx-arm64`, `osx-x64` and `win-x64`. .NET selects
-the native library for the process. See the [.NET API guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md).
+the native library for the process.
 
 ## Responsibility
 
