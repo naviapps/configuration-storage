@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -114,6 +115,14 @@ class SDKToolPolicyTests(unittest.TestCase):
                 "dotnet", Path("absent.dll"), "win-arm64", {}, Path("unused"), tooling=tooling
             )
         tooling.stage_native.assert_not_called()
+
+    def test_windows_rejects_conflicting_artifact_roots_before_selecting_dotnet(self):
+        artifact_roots = {"VM_RUNNER_ARTIFACTS_DIR": "current", "NAVI_CI_ARTIFACTS": "legacy"}
+        with (
+            patch.dict(os.environ, artifact_roots, clear=True),
+            self.assertRaisesRegex(ValueError, "Conflicting VM_RUNNER_ARTIFACTS_DIR"),
+        ):
+            windows.main([])
 
     def test_windows_acceptance_inputs_cover_local_tools_and_package_license(self):
         support = bindings.support_inputs()

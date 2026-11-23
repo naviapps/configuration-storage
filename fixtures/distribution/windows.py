@@ -122,6 +122,8 @@ def main(argv=None):
     environment = {
         key.upper(): value for key, value in os.environ.items() if key.upper() != "DOTNET_HOST_PATH"
     }
+    output = ROOT / "build/windows"
+    artifact_root = load("vm_environment").artifacts_dir(environment) or output
     dotnet_path = Path(environment.get("DOTNET_BIN", ""))
     if not dotnet_path.is_absolute() or not dotnet_path.is_file():
         raise ValueError("Set DOTNET_BIN to the absolute path of the pinned x64 .NET SDK")
@@ -151,11 +153,7 @@ def main(argv=None):
         ).strip(),
         TARGET,
     )
-    output = ROOT / "build/windows"
     output.mkdir(parents=True, exist_ok=True)
-    artifact_root = Path(env.get("NAVI_CI_ARTIFACTS") or output)
-    if not artifact_root.is_absolute():
-        raise ValueError("NAVI_CI_ARTIFACTS must be an absolute directory")
     with (
         artifacts.build_lock(output),
         tempfile.TemporaryDirectory(dir=output, prefix="win-x64-build-") as directory,

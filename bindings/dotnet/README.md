@@ -301,7 +301,7 @@ x64 Rust DLL and bundled SQLite with the static CRT, verifies the native exports
 and retained notices, and runs Rust checks, C ABI and standalone C fixtures,
 managed tests and an installed NuGet consumer. That consumer restores the `win-x64` package
 from an isolated local feed. The verified package and its hash receipt go to
-`build/windows/win-x64`, or to `win-x64` under `NAVI_CI_ARTIFACTS` when that
+`build/windows/win-x64`, or to `win-x64` under `VM_RUNNER_ARTIFACTS_DIR` when that
 variable is set. See the [development guide](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md)
 for CI prerequisites and notice policy.
 
