@@ -21,13 +21,14 @@ mise exec -- make check
 
 Adjust `DEVELOPER_DIR` to the installed Xcode; no global Xcode selection is needed.
 The fetch prepares the workspace dependency cache for the locked offline Rust checks.
-Contributor checks run from this checkout using the pinned tools and the tracked
-framework. SwiftPM and NuGet installation use the distributed SDK.
+Contributor checks use the pinned tools and the tracked framework. The shared
+commands fetch the public SDK Tooling revision in [mise.toml](../mise.toml)
+on first use. SwiftPM and NuGet installation use the distributed SDK.
 
 Swift sources and tests live in `Sources/` and `Tests/`; the public Swift guide is
 in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live in
 `crates/`, with C ABI tests in `crates/ffi/tests/c/`. .NET projects use
-`bindings/dotnet/src/` and `bindings/dotnet/tests/`. Developer entry points live in
+`bindings/dotnet/src/` and `bindings/dotnet/tests/`. SDK-specific native and packaging drivers live in
 `tools/`, independent consumer fixtures in `fixtures/`, cross-language guides in
 `docs/`, and tracked native frameworks and receipts in `Artifacts/`.
 
@@ -45,7 +46,7 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | `make check-swift`              | Strict Swift library and test compilation against the tracked framework                                 | No             |
 | `make check-fast`               | Owned source lint and both Rust/Swift compilation checks                                                | No             |
 | `make check`                    | Source lint, Rust Clippy and tests, .NET binding tests, Swift tests and the standalone SwiftPM consumer | Yes            |
-| `make check-distribution`       | Source lint, Rust/tool tests, native verification, C/.NET/NuGet checks and installed Rust/C clients     | Yes            |
+| `make check-distribution`       | Tooling tests, native verification, C/.NET/NuGet checks and installed Rust/C clients                    | Yes            |
 | `make test-rust`                | Rust workspace tests and doctests, locked/offline                                                       | Yes            |
 | `make test-managed`             | .NET binding tests with fake-native responses                                                           | Yes            |
 | `make test`                     | Strict Swift tests against the tracked framework                                                        | Yes            |
@@ -111,7 +112,7 @@ If your checkout is shallow, run the driver with a complete local repository or
 bundle containing its exact commit:
 
 ```sh
-mise exec -- python3 -B tools/install-consumers.py \
+mise run sdk-tooling -- installed-consumers \
   --git-source /absolute/verified/configuration-storage.bundle \
   --evidence /absolute/owned-artifacts/storage-installed-consumers.json
 ```
@@ -129,18 +130,10 @@ SDK tests on Windows x64.
 
 ## Maintainer distribution checks
 
-Set `NAVI_SDK_TOOLING_SOURCE` to the absolute path of a clean SDK Tooling
-checkout at the commit recorded in
-[`tools/tooling-sources.json`](../tools/tooling-sources.json). This enables
-`make check-distribution`, `make native`, `make native-verify`, `make docs`,
-and the C, .NET package, tooling policy and installed Rust and C checks.
-
-```sh
-export NAVI_SDK_TOOLING_SOURCE=/absolute/path/to/sdk-tooling
-mise exec -- make check-distribution
-```
-
-The private SDK Tooling workflow verifies the native receipts and standalone
+[sdk-checks.toml](../sdk-checks.toml) describes the SDK's fixtures and
+documentation checks. [sdk-distribution.toml](../sdk-distribution.toml) lists the
+release checks for each platform. The [public SDK Tooling workflow](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
+verifies the native receipts and standalone
 Swift, Rust, C and .NET consumers, including a locally built `win-x64` NuGet
 package. Dispatch it with the full commit SHA of the SDK on `main`:
 
@@ -148,6 +141,17 @@ package. Dispatch it with the full commit SHA of the SDK on `main`:
 gh workflow run check-sdk-distribution.yml -R naviapps/sdk-tooling \
   -f sdk=configuration-storage -f "revision=$(git rev-parse HEAD)"
 ```
+
+For local native and packaging checks, prepare a clean SDK Tooling checkout at
+the revision recorded in [mise.toml](../mise.toml), then run:
+
+```sh
+export NAVI_SDK_TOOLING_SOURCE=/absolute/path/to/sdk-tooling
+mise exec -- make check-distribution
+```
+
+The shared lint, Swift consumer, and DocC commands use the pinned public package
+directly. The installed Rust and C checks also run through that package.
 
 See the [.NET guide](../bindings/dotnet/README.md#windows-x64-package-acceptance)
 for the local Windows command, prerequisites and package output. Use an owned

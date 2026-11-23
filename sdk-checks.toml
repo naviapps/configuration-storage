@@ -1,0 +1,13 @@
+[swift]
+executable = "ConfigurationStorageConsumer"
+inputs = ["Package.swift", "Sources", "Tests", "Artifacts", "ThirdParty", "LICENSE"]
+
+[docs]
+
+[installed]
+git_url = "https://github.com/naviapps/configuration-storage.git"
+rust_packages = ["configuration-storage"]
+
+[installed.c]
+framework = "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework"
+header = "configuration_storage.h"

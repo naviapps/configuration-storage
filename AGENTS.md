@@ -9,9 +9,9 @@ Use Git on main and commit coherent, verified changes. Coordinate commits,
 publication, artifact builds, CI/service/VM lifecycle and consumer pins at repository
 scope. Preserve user data, unsaved edits, original recovery, human QA and sealed releases. No real
 customer/security/credential/sharing changes. Keep `make check` and public
-GitHub-hosted CI independent of private dependencies. Run distribution validation
-with the pinned SDK Tooling checkout. Use login:false and task-scoped tools;
-maintained docs/comments are English.
+GitHub-hosted CI independent of private dependencies. Use the public SDK Tooling
+revision in `mise.toml` for shared checks and distribution validation. Use login:false
+and task-scoped tools. Maintain documentation and comments in English.
 
 Never seed over an unreadable, missing selected, foreign or newer store. Retain
 old generations on restore. Copy raw SQLite families before automatic recovery;
