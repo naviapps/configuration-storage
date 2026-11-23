@@ -11,7 +11,7 @@ import tempfile
 import tomllib
 from pathlib import Path
 
-from _tooling import git, load_candidate, verify
+from _tooling import git, load
 
 import bindings
 
@@ -118,13 +118,8 @@ def seal_package(source, destination, receipt, artifact_tooling):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--architecture", choices=("x64",), default="x64")
-    parser.add_argument(
-        "--tooling-source", type=Path, required=True, help="Local reviewed SDK tooling checkout"
-    )
-    parser.add_argument("--tooling-revision", required=True, help="Exact local SDK tooling commit")
-    args = parser.parse_args(argv)
-    selected = load_candidate(args.tooling_source, args.tooling_revision)
-    windows, tooling, artifacts = (selected(name) for name in ("windows", "bindings", "artifacts"))
+    parser.parse_args(argv)
+    windows, tooling, artifacts = (load(name) for name in ("windows", "bindings", "artifacts"))
     environment = {
         key.upper(): value for key, value in os.environ.items() if key.upper() != "DOTNET_HOST_PATH"
     }
@@ -170,7 +165,7 @@ def main(argv=None):
         before = (checkout_commit(env), bindings.source_inputs(artifacts))
         # The committed macOS artifact and parent-maintained notices are read-only here.
         bindings.run("cargo", "fetch", "--locked", "--target", TARGET, env=env)
-        verify_notices(selected("cargo"), env)
+        verify_notices(load("cargo"), env)
         build_env = build_environment(env, candidate / "target")
         bindings.run("cargo", "fmt", "--all", "--", "--check", env=build_env)
         bindings.run(
@@ -256,14 +251,12 @@ def main(argv=None):
             raise SystemExit("Native source inputs changed during Windows acceptance")
         if hashlib.sha256(library.read_bytes()).hexdigest() != native_hash:
             raise ValueError("The staged DLL changed during Windows x64 acceptance")
-        verify(args.tooling_source, args.tooling_revision)
         receipt = {
             "source": before[0],
             "target": TARGET,
             "runtime": RID,
             "hostArchitecture": host,
             "executionMode": "x64-emulation" if host == "arm64" else "native",
-            "toolingRevision": args.tooling_revision,
             "dotnetVersion": dotnet_version,
             "compiler": compiler,
             "inputs": before[1],

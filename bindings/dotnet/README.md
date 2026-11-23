@@ -292,13 +292,11 @@ the native host architecture. On ARM64 this requires ARM64-hosted MSVC with
 x64 target components and Windows x64 emulation to execute the resulting tests.
 Set `DOTNET_BIN` to the absolute path of the x64 .NET SDK 10.0.403 executable.
 
-From the SDK root, supply a clean local SDK Tooling checkout and replace the
-revision placeholder with its full, reviewed 40-character commit SHA.
+From the SDK root, run the repository's acceptance driver.
 
 ```powershell
 $env:DOTNET_BIN = 'C:\Program Files\dotnet\x64\dotnet.exe'
-python -E -S -B tools/windows.py --tooling-source 'C:\approved\sdk-tooling' `
-  --tooling-revision '<FULL_REVIEWED_TOOLING_SHA>'
+python -E -S -B tools/windows.py
 ```
 
 Use the installed x64 executable's path on your machine. The driver builds the

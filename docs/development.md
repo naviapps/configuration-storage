@@ -9,8 +9,8 @@ For SDK installation and explicit writes, see the [overview](../README.md).
 Use Git, mise and a full Xcode installation providing Swift 6.3 or newer, SwiftPM,
 DocC and Apple build tools on macOS 26 or later. `mise.toml` selects the developer
 Python, .NET and static tools; `rust-toolchain.toml` selects Rust 1.99.1, rustfmt
-and Clippy. Review those manifests and `tools/tooling-sources.json`, then prepare
-the pinned tools before running checks:
+and Clippy. Review those manifests, then prepare the pinned tools before running
+checks:
 
 ```sh
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
@@ -22,10 +22,8 @@ mise exec -- make docs
 
 Adjust `DEVELOPER_DIR` to the installed Xcode; no global Xcode selection is needed.
 The fetch prepares the workspace dependency cache for the locked offline Rust checks.
-Developer entry points load the immutable `sdk-tooling` revision in
-`tools/tooling-sources.json`. See [shared developer setup](https://github.com/naviapps/sdk-tooling#readme)
-for verified caches, offline use and source overrides. The first developer use may
-fetch that tooling revision. Ordinary SwiftPM and NuGet consumers need none of this setup.
+Developer entry points in `tools/` use code included in this checkout. Ordinary
+SwiftPM and NuGet consumers need none of this setup.
 
 Swift sources and tests live in `Sources/` and `Tests/`; the public Swift guide is
 in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live in
@@ -83,9 +81,8 @@ that native integrity failures surface as typed errors.
 
 `make lint` (also `mise run lint`) checks owned source and managed whitespace;
 `mise run format` formats owned source. Compiler and native acceptance remain
-in their explicit targets. [Shared quality policy](https://github.com/naviapps/sdk-tooling/blob/main/docs/REFERENCE.md#quality-and-documentation-checks)
-describes source selection and language checks. Vendored code, native artifacts
-and original notices are excluded. DocC Markdown is checked by `make docs` rather than Dprint.
+in their explicit targets. Static checks select source files using Git and exclude
+vendored code, native artifacts and original notices. `make docs` checks DocC Markdown.
 
 `make test` uses complete concurrency checks and warnings as errors against
 UUID-owned temporary stores. Swift and binding targets verify the source-matched
@@ -121,8 +118,8 @@ mise exec -- python3 -B tools/install-consumers.py \
 ```
 
 Choose an unused evidence path outside the checkout for the report and its
-companion lock and metadata files. See [shared consumer verification](https://github.com/naviapps/sdk-tooling/blob/main/docs/REFERENCE.md#consumer-verification)
-for the isolation and evidence mechanisms.
+companion lock and metadata files. The report ties the checked-out SDK commit to
+the isolated Rust and C fixture results.
 
 The [macOS workflow](../.github/workflows/check-macos.yml) runs strict Swift
 tests and the standalone SwiftPM consumer on macOS 26 with Xcode 26.6 and on
@@ -138,9 +135,8 @@ for the local Windows command, prerequisites and package output.
 
 ## Native rebuilds and provenance
 
-The [shared native-artifact guide](https://github.com/naviapps/sdk-tooling/blob/main/docs/REFERENCE.md#native-artifacts-and-provenance)
-describes build, receipt and notice mechanisms. This SDK's explicit `make native`
-requires pinned Rust 1.99.1, both Darwin standard-library targets and locked offline
+The SDK's explicit `make native` requires pinned Rust 1.99.1, both Darwin
+standard-library targets and locked offline
 dependencies. It uses `target/native` and builds `libconfiguration_storage.dylib`
 into a universal arm64/x86_64 framework with minimum macOS 26.0. Its receipt is
 `Artifacts/native-build.json`; verification never refreshes it.

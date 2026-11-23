@@ -13,7 +13,7 @@ import tempfile
 import tomllib
 from pathlib import Path
 
-from _tooling import load
+from _tooling import load, support_inputs
 
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE = "NaviApps.ConfigurationStorage"
@@ -68,7 +68,8 @@ def framework_binary():
 
 def source_inputs(artifacts):
     paths = [
-        ROOT / name for name in ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "mise.toml")
+        ROOT / name
+        for name in ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "mise.toml", "LICENSE")
     ]
     paths += [p for p in (ROOT / "crates").rglob("*") if p.is_file() and p.name != ".DS_Store"]
     paths += [p for p in (ROOT / "ThirdParty").rglob("*") if p.is_file() and p.name != ".DS_Store"]
@@ -82,13 +83,12 @@ def source_inputs(artifacts):
     paths += [
         ROOT / name
         for name in (
-            "tools/_tooling.py",
             "tools/bindings.py",
             "tools/windows.py",
             "fixtures/c-consumer/main.c",
         )
     ]
-    return artifacts.hashes(paths, ROOT)
+    return artifacts.hashes(paths, ROOT) | support_inputs()
 
 
 def managed_tests(dotnet, env, library=None, *, tooling, runtime=None):

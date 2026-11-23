@@ -1,4 +1,4 @@
-"""SDK-owned fixture boundaries; shared staging/audit/graph tests live in sdk-tooling."""
+"""ConfigurationStorage ABI fixture and package acceptance boundaries."""
 
 import hashlib
 import importlib.util
@@ -120,7 +120,7 @@ class SDKToolPolicyTests(unittest.TestCase):
 
     def test_windows_cli_and_packer_reject_arm64_before_selecting_tools(self):
         with (
-            patch.object(windows, "load_candidate") as load,
+            patch.object(windows, "load") as load,
             patch("sys.stderr"),
             self.assertRaises(SystemExit),
         ):
@@ -133,11 +133,14 @@ class SDKToolPolicyTests(unittest.TestCase):
             )
         tooling.stage_native.assert_not_called()
 
-    def test_windows_candidate_requires_a_full_exact_sha(self):
-        with patch("_tooling.verify") as verify:
-            with self.assertRaisesRegex(ValueError, "full Git commit SHA"):
-                windows.load_candidate(Path("unverified"), "a1b2c3d")
-        verify.assert_not_called()
+    def test_windows_acceptance_inputs_cover_local_tools_and_package_license(self):
+        support = bindings.support_inputs()
+        self.assertTrue(support)
+        inputs = bindings.source_inputs(artifacts)
+        self.assertEqual({name: inputs[name] for name in support}, support)
+        self.assertEqual(
+            inputs["LICENSE"], hashlib.sha256((ROOT / "LICENSE").read_bytes()).hexdigest()
+        )
 
     def test_windows_package_uses_x64_asset_and_isolated_x64_consumer(self):
         with tempfile.TemporaryDirectory() as directory:
