@@ -2,12 +2,14 @@ PYTHON ?= python3
 CARGO ?= cargo
 SWIFT ?= swift
 SWIFT_FLAGS := -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+CHECK_CORE := lint lint-rust test-rust native-verify test-tools
 
 .DEFAULT_GOAL := check
-.PHONY: help check check-fast check-rust check-swift acceptance native native-verify lint lint-rust test test-rust test-tools test-consumer test-installed-consumers test-c test-bindings docs
+.PHONY: help check check-distribution check-fast check-rust check-swift acceptance native native-verify lint lint-rust test test-rust test-tools test-consumer test-installed-consumers test-c test-bindings docs
 
 help:
 	@echo 'check          Source format/lint, Rust Clippy/tests, native receipt verification, tool/Swift tests and external consumer (default)'
+	@echo 'check-distribution  Source lint, Rust/tool tests, native receipt verification, C/.NET/NuGet and installed Rust/C consumers'
 	@echo 'check-fast     Lint and compile Rust/Swift tests without running them; verifies native receipt'
 	@echo 'check-rust     Compile Rust library and test targets; no test execution'
 	@echo 'check-swift    Compile Swift library and test targets; verifies native receipt; no test execution'
@@ -23,7 +25,9 @@ help:
 	@echo 'native-verify  Complete source/artifact receipt, notices, exports and platform verification'
 
 # Verification consumes the parent's artifact; it never builds one implicitly.
-check: lint lint-rust test-rust native-verify test-tools test test-consumer
+check: $(CHECK_CORE) test test-consumer
+
+check-distribution: $(CHECK_CORE) test-bindings test-installed-consumers
 
 # Iteration only: the complete runtime gate remains explicit below.
 check-fast: lint check-rust check-swift
@@ -35,7 +39,7 @@ check-swift: native-verify
 	"$(SWIFT)" build --build-tests $(SWIFT_FLAGS)
 
 # Uses the existing artifact; native rebuilds and Windows acceptance belong to the parent.
-acceptance: check test-bindings test-installed-consumers
+acceptance: check check-distribution
 
 native:
 	"$(PYTHON)" tools/native.py

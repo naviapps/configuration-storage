@@ -48,6 +48,7 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | `make check-swift`              | Native verification and strict Swift library/test compilation                                       | No             |
 | `make check-fast`               | Owned source lint and both Rust/Swift compilation checks                                            | No             |
 | `make check`                    | Source lint, Rust Clippy/tests, native verification, tool/Swift tests and external SwiftPM consumer | Yes            |
+| `make check-distribution`       | Source lint, Rust/tool tests, native verification, C/.NET/NuGet checks and installed Rust/C clients | Yes            |
 | `make test-rust`                | Rust workspace tests and doctests, locked/offline                                                   | Yes            |
 | `make test`                     | Native verification and strict Swift tests                                                          | Yes            |
 | `make test-consumer`            | Native verification and a clean external SwiftPM public-API consumer                                | Yes            |
@@ -56,7 +57,7 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | `make test-tools`               | SDK build/fixture policy tests                                                                      | Yes            |
 | `make docs`                     | Swift public-symbol compilation and DocC conversion with warnings as errors                         | No             |
 | `make test-installed-consumers` | Independent Git Rust and installed C clients using fresh consumer directories                       | Yes            |
-| `make acceptance`               | `check`, `test-bindings` and `test-installed-consumers`                                             | Yes            |
+| `make acceptance`               | `check` and `check-distribution`                                                                    | Yes            |
 
 Use the compilation checks while editing and the relevant test command before
 handoff. Compilation success does not validate storage behavior, ownership,
@@ -123,8 +124,9 @@ Choose an unused evidence path outside the checkout for the report and its
 companion lock and metadata files. See [shared consumer verification](https://github.com/naviapps/sdk-tooling/blob/main/docs/REFERENCE.md#consumer-verification)
 for the isolation and evidence mechanisms.
 
-The [macOS workflow](../.github/workflows/check-macos.yml) uses Xcode 27 for the
-full SDK checks and runs strict Swift tests with Xcode 26.6 on macOS 26. The
+The [macOS workflow](../.github/workflows/check-macos.yml) runs strict Swift
+tests and the standalone SwiftPM consumer on macOS 26 with Xcode 26.6 and on
+macOS 27 with Xcode 27.2. The SDK distribution checks run once with Xcode 27.2. The
 [Windows workflow](../.github/workflows/check-windows.yml) uses GitHub's Windows
 x64 runner. CI verifies native receipts and standalone Swift, Rust, C and .NET
 consumers, including a locally built `win-x64` NuGet package. Use an owned
