@@ -4,7 +4,7 @@ SDK_TOOLING ?= mise run sdk-tooling --
 SWIFT_FLAGS := -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
 
 .DEFAULT_GOAL := check
-.PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings docs
+.PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings docs clean
 
 help:
 	@echo 'check          Source lint, Rust/Swift/managed tests and external Swift consumer (default)'
@@ -22,6 +22,7 @@ help:
 	@echo 'test-bindings  Verify native receipt; run C/.NET tests and local NuGet consumer (.NET 10 required)'
 	@echo 'acceptance     All local macOS gates: Swift, Rust fmt/Clippy/tests, C/.NET/package consumer'
 	@echo 'native-verify  Complete source/artifact receipt, notices, exports and platform verification'
+	@echo 'clean          Remove checkout-local build outputs'
 
 # Verification consumes the parent's artifact; it never builds one implicitly.
 check: check-source test test-consumer
@@ -84,3 +85,10 @@ format:
 
 test-managed:
 	dotnet run --configuration Release --project bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj
+
+clean:
+	$(SDK_TOOLING) clean target .build .native-build build \
+		bindings/dotnet/src/NaviApps.ConfigurationStorage/bin \
+		bindings/dotnet/src/NaviApps.ConfigurationStorage/obj \
+		bindings/dotnet/tests/ConfigurationStorage.Tests/bin \
+		bindings/dotnet/tests/ConfigurationStorage.Tests/obj
