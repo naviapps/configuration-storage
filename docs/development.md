@@ -123,9 +123,9 @@ Choose an unused evidence path outside the checkout for the report and its
 companion lock and metadata files. See [shared consumer verification](https://github.com/naviapps/sdk-tooling/blob/main/docs/REFERENCE.md#consumer-verification)
 for the isolation and evidence mechanisms.
 
-The [macOS workflow](../.github/workflows/macos-host.yml) uses GitHub's Xcode 27
+The [macOS workflow](../.github/workflows/check-macos.yml) uses GitHub's Xcode 27
 runner for Rust and strict Swift tests. The
-[Windows workflow](../.github/workflows/native-host.yml) uses GitHub's Windows
+[Windows workflow](../.github/workflows/check-windows-x64.yml) uses GitHub's Windows
 x64 runner. Once the pinned tooling is publicly accessible, the `full` dispatch
 option also verifies native receipts and standalone Swift, Rust, C and .NET
 consumers, including a locally built `win-x64` NuGet package. These checks run
