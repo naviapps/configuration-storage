@@ -13,9 +13,9 @@ from pathlib import Path
 
 from sdk_tooling.adapters import git, load
 
-from fixtures.distribution import bindings
+from distribution import verify_bindings as bindings
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 TARGET = "x86_64-pc-windows-msvc"
 RID = "win-x64"
 RECEIPT = "configuration-storage-windows.json"
@@ -118,7 +118,7 @@ def seal_package(source, destination, receipt, artifact_tooling):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args(argv)
-    windows, tooling, artifacts = (load(name) for name in ("windows", "bindings", "artifacts"))
+    windows, artifacts, c_compiler = (load(name) for name in ("windows", "artifacts", "c_compiler"))
     environment = {
         key.upper(): value for key, value in os.environ.items() if key.upper() != "DOTNET_HOST_PATH"
     }
@@ -203,10 +203,10 @@ def main(argv=None):
         )
         release = candidate / "target" / TARGET / "release"
         header = ROOT / "crates/ffi/include/configuration_storage.h"
-        library = tooling.stage_native(
+        library = artifacts.stage_native(
             release / "configuration_storage.dll", candidate / "configuration_storage.dll"
         )
-        import_library = tooling.stage_native(
+        import_library = artifacts.stage_native(
             release / "configuration_storage.dll.lib", candidate / "configuration_storage.dll.lib"
         )
         native_hash = hashlib.sha256(library.read_bytes()).hexdigest()
@@ -216,7 +216,7 @@ def main(argv=None):
 
         def compile_fixture(source, name, include):
             executable = candidate / name
-            tooling.compile_c(
+            c_compiler.compile_c(
                 ROOT / source,
                 output=executable,
                 compiler=[tools / "cl.exe"],
@@ -233,17 +233,15 @@ def main(argv=None):
 
         executable = compile_fixture("crates/ffi/tests/c/abi.c", "abi.exe", header.parent)
         bindings.c_test(executable, build_env, candidate)
-        installed_header = tooling.stage_native(header, candidate / header.name)
+        installed_header = artifacts.stage_native(header, candidate / header.name)
         executable = compile_fixture(
-            "fixtures/c-consumer/main.c", "c-consumer.exe", installed_header.parent
+            "fixtures/consumers/c/main.c", "c-consumer.exe", installed_header.parent
         )
         # The installed harness takes the parent of its fixture store.
         with tempfile.TemporaryDirectory(dir=candidate, prefix="c-installed-") as fixture:
             bindings.run(executable, fixture, env=build_env)
-        bindings.managed_tests(dotnet, build_env, library, tooling=tooling, runtime=RID)
-        packages = bindings.pack_and_consume(
-            dotnet, library, RID, build_env, candidate, tooling=tooling
-        )
+        bindings.managed_tests(dotnet, build_env, library, runtime=RID)
+        packages = bindings.pack_and_consume(dotnet, library, RID, build_env, candidate)
         if (checkout_commit(env), bindings.source_inputs(artifacts)) != before:
             raise SystemExit("Native source inputs changed during Windows acceptance")
         if hashlib.sha256(library.read_bytes()).hexdigest() != native_hash:

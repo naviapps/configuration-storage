@@ -293,7 +293,7 @@ From the SDK root, use a checkout of the SDK Tooling revision pinned in
 
 ```powershell
 $env:DOTNET_BIN = 'C:\Program Files\dotnet\x64\dotnet.exe'
-python -I -B 'C:\source\sdk-tooling\tasks\sdk' python -m fixtures.distribution.windows
+python -I -B 'C:\source\sdk-tooling\tasks\sdk' python -m distribution.verify_windows
 ```
 
 Use the installed x64 executable's path on your machine. The driver builds the

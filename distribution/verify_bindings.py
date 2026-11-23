@@ -15,7 +15,7 @@ from pathlib import Path
 from sdk_tooling.adapters import load, support_inputs
 from sdk_tooling.dotnet import subprocess_environment
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "NaviApps.ConfigurationStorage"
 PROJECT = ROOT / "bindings/dotnet/src" / PACKAGE / (PACKAGE + ".csproj")
 TEST_PROJECT = (
@@ -72,18 +72,18 @@ def source_inputs(artifacts):
     paths += [
         ROOT / name
         for name in (
-            "fixtures/distribution/bindings.py",
-            "fixtures/distribution/windows.py",
-            "fixtures/distribution/nuget/Program.cs",
-            "fixtures/c-consumer/main.c",
+            "distribution/verify_bindings.py",
+            "distribution/verify_windows.py",
+            "fixtures/consumers/dotnet/Program.cs",
+            "fixtures/consumers/c/main.c",
         )
     ]
     return artifacts.hashes(paths, ROOT) | support_inputs(ROOT)
 
 
-def managed_tests(dotnet, env, library=None, *, tooling, runtime=None):
+def managed_tests(dotnet, env, library=None, *, runtime=None):
     arguments = ("--native-library", library) if library else ()
-    tooling.run_managed(
+    load("dotnet").run_managed(
         dotnet,
         TEST_PROJECT,
         env=env,
@@ -101,11 +101,11 @@ def c_test(executable, env, output):
         run(executable, Path(directory) / "store", env=env)
 
 
-def pack_and_consume(dotnet, library, rid, env, output, *, tooling):
+def pack_and_consume(dotnet, library, rid, env, output):
     if rid not in NATIVE_FILENAMES:
         raise ValueError("ConfigurationStorage packages support osx-arm64, osx-x64 and win-x64")
     filename = NATIVE_FILENAMES[rid]
-    staged = tooling.stage_native(library, output / "native" / rid / filename)
+    staged = load("artifacts").stage_native(library, output / "native" / rid / filename)
     # Notices are supplied and maintained by the native owner, never generated here.
     notices = {
         "licenses/" + path.relative_to(ROOT / "ThirdParty").as_posix(): path
@@ -117,7 +117,7 @@ def pack_and_consume(dotnet, library, rid, env, output, *, tooling):
     packages = output / "packages"
     packages.mkdir(parents=True, exist_ok=True)
     version = tomllib.loads((ROOT / "Cargo.toml").read_text())["workspace"]["package"]["version"]
-    tooling.pack_project(
+    load("dotnet").pack_project(
         dotnet,
         PROJECT,
         output=packages,
@@ -131,17 +131,17 @@ def pack_and_consume(dotnet, library, rid, env, output, *, tooling):
         },
     )
     package = packages / (PACKAGE + "." + version + ".nupkg")
-    tooling.audit_package(
+    load("nuget").audit_package(
         package,
         expected_files={"LICENSE": ROOT / "LICENSE", **notices},
         runtime_files={"runtimes/" + rid + "/native/" + filename: library},
     )
     # macOS keeps the portable fixture. On Windows require the explicit x64 package asset.
-    tooling.run_isolated_consumer(
+    load("nuget").run_isolated_consumer(
         dotnet,
         packages=[package],
         references={PACKAGE: version},
-        source=(Path(__file__).parent / "nuget/Program.cs").read_text(encoding="utf-8"),
+        source=(ROOT / "fixtures/consumers/dotnet/Program.cs").read_text(encoding="utf-8"),
         work_parent=output,
         env=env,
         exclude_paths=(ROOT / "target", output),
@@ -162,7 +162,6 @@ def main():
         raise SystemExit(
             "Parent-built Artifacts/CConfigurationStorage.xcframework is missing; this helper never builds native libraries"
         )
-    tooling = load("bindings")
     artifacts = load("artifacts")
     artifact = ROOT / "Artifacts" / (MODULE + ".xcframework")
     before = artifacts.hashes(artifacts.files(artifact), artifact)
@@ -174,7 +173,7 @@ def main():
         "coverage": ["C owned-tempstore ABI"],
     }
     try:
-        tooling.compile_c(
+        load("c_compiler").compile_c(
             ROOT / "crates/ffi/tests/c/abi.c",
             compiler=("xcrun", "clang"),
             output=output / "abi",
@@ -188,11 +187,9 @@ def main():
         c_test(output / "abi", env, output)
         if not args.c_only:
             dotnet = dotnet_tool(env)
-            managed_tests(dotnet, env, library, tooling=tooling)
+            managed_tests(dotnet, env, library)
             rid = "osx-arm64" if platform.machine().lower() in ("arm64", "aarch64") else "osx-x64"
-            receipt["packages"] = pack_and_consume(
-                dotnet, library, rid, env, output, tooling=tooling
-            )
+            receipt["packages"] = pack_and_consume(dotnet, library, rid, env, output)
             receipt["runtime"] = rid
             receipt["coverage"] += [
                 "managed ownership/cancellation/disposal",

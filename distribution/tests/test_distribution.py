@@ -10,9 +10,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from fixtures.distribution import bindings, windows
+from distribution import verify_bindings as bindings
+from distribution import verify_windows as windows
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 artifacts = bindings.load("artifacts")
 
 
@@ -37,9 +38,11 @@ class SDKToolPolicyTests(unittest.TestCase):
 
     def test_managed_fixture_uses_selected_feed_and_explicit_native_path(self):
         library = Path("/fixture/CConfigurationStorage")
-        tooling = Mock()
-        bindings.managed_tests("dotnet", {}, library, tooling=tooling, runtime="win-x64")
-        run = tooling.run_managed
+        dotnet = Mock()
+        with patch.object(bindings, "load", return_value=dotnet) as load:
+            bindings.managed_tests("dotnet", {}, library, runtime="win-x64")
+        load.assert_called_once_with("dotnet")
+        run = dotnet.run_managed
         self.assertEqual(run.call_args.args, ("dotnet", bindings.TEST_PROJECT))
         self.assertEqual(run.call_args.kwargs["nuget_config"], bindings.NUGET_CONFIG)
         self.assertEqual(run.call_args.kwargs["arguments"], ("--native-library", library))
@@ -51,7 +54,7 @@ class SDKToolPolicyTests(unittest.TestCase):
             with (
                 patch.object(bindings, "ROOT", Path(directory)),
                 patch.object(sys, "platform", "darwin"),
-                patch.object(sys, "argv", ["bindings.py"]),
+                patch.object(sys, "argv", ["verify_bindings.py"]),
                 patch.object(bindings, "run") as run,
             ):
                 with self.assertRaisesRegex(SystemExit, "Parent-built"):
@@ -109,12 +112,12 @@ class SDKToolPolicyTests(unittest.TestCase):
                 self.assertEqual(retained.read_bytes(), b"changed retained notice")
 
     def test_windows_packer_rejects_arm64_before_staging(self):
-        tooling = Mock()
-        with self.assertRaisesRegex(ValueError, "win-x64"):
-            bindings.pack_and_consume(
-                "dotnet", Path("absent.dll"), "win-arm64", {}, Path("unused"), tooling=tooling
-            )
-        tooling.stage_native.assert_not_called()
+        with (
+            patch.object(bindings, "load") as load,
+            self.assertRaisesRegex(ValueError, "win-x64"),
+        ):
+            bindings.pack_and_consume("dotnet", Path("absent.dll"), "win-arm64", {}, Path("unused"))
+        load.assert_not_called()
 
     def test_windows_rejects_conflicting_artifact_roots_before_selecting_dotnet(self):
         artifact_roots = {"VM_RUNNER_ARTIFACTS_DIR": "current", "NAVI_CI_ARTIFACTS": "legacy"}
@@ -146,26 +149,26 @@ class SDKToolPolicyTests(unittest.TestCase):
             def pack(*args, **kwargs):
                 package.write_bytes(b"accepted package")
 
-            tooling = Mock()
-            tooling.stage_native.return_value = output / "native/win-x64/configuration_storage.dll"
-            tooling.pack_project.side_effect = pack
-            observed = bindings.pack_and_consume(
-                "dotnet", library, "win-x64", {}, output, tooling=tooling
-            )
+            native, dotnet, nuget = Mock(), Mock(), Mock()
+            native.stage_native.return_value = output / "native/win-x64/configuration_storage.dll"
+            dotnet.pack_project.side_effect = pack
+            modules = {"artifacts": native, "dotnet": dotnet, "nuget": nuget}
+            with patch.object(bindings, "load", side_effect=modules.__getitem__):
+                observed = bindings.pack_and_consume("dotnet", library, "win-x64", {}, output)
             self.assertEqual(
                 observed, {package.name: hashlib.sha256(package.read_bytes()).hexdigest()}
             )
             self.assertEqual(
-                tooling.pack_project.call_args.kwargs["properties"][
+                dotnet.pack_project.call_args.kwargs["properties"][
                     "ConfigurationStorageRuntimeIdentifier"
                 ],
                 "win-x64",
             )
             self.assertEqual(
-                tooling.audit_package.call_args.kwargs["runtime_files"],
+                nuget.audit_package.call_args.kwargs["runtime_files"],
                 {"runtimes/win-x64/native/configuration_storage.dll": library},
             )
-            self.assertEqual(tooling.run_isolated_consumer.call_args.kwargs["runtime"], "win-x64")
+            self.assertEqual(nuget.run_isolated_consumer.call_args.kwargs["runtime"], "win-x64")
 
     def test_x64_output_rejects_a_changed_package_and_preserves_prior_pair(self):
         with tempfile.TemporaryDirectory() as directory:

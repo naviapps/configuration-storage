@@ -28,9 +28,9 @@ on first use. SwiftPM and NuGet installation use the distributed SDK.
 Swift sources and tests live in `Sources/` and `Tests/`; the public Swift guide is
 in `Sources/ConfigurationStorage/ConfigurationStorage.docc/`. Rust crates live in
 `crates/`, with C ABI tests in `crates/ffi/tests/c/`. .NET projects use
-`bindings/dotnet/src/` and `bindings/dotnet/tests/`. Packaging checks live in
-`fixtures/distribution/` alongside the independent consumer fixtures. Cross-language guides are in
-`docs/`, and tracked native frameworks and receipts in `Artifacts/`.
+`bindings/dotnet/src/` and `bindings/dotnet/tests/`. Packaging checks are in
+`distribution/` and independent consumers are in `fixtures/consumers/`. Cross-language guides are
+in `docs/`. Tracked native frameworks and receipts are in `Artifacts/`.
 
 ## Choose a check
 
@@ -53,7 +53,7 @@ Run Make targets through `mise exec --` so their recipes use the pinned tools.
 | `make test-consumer`            | Standalone SwiftPM public-API consumer                                                                  | Yes            |
 | `make test-c`                   | Native verification and disposable-store C ABI consumer                                                 | Yes            |
 | `make test-bindings`            | Native verification, C/.NET tests and clean local NuGet consumer                                        | Yes            |
-| `make test-fixtures`            | SDK build/fixture policy tests                                                                          | Yes            |
+| `make test-distribution-tools`  | SDK build/fixture policy tests                                                                          | Yes            |
 | `make docs`                     | Swift public-symbol compilation and DocC conversion with warnings as errors                             | No             |
 | `make test-installed-consumers` | Independent Git Rust and installed C clients using fresh consumer directories                           | Yes            |
 | `make acceptance`               | `check` and `check-distribution`                                                                        | Yes            |
@@ -97,7 +97,7 @@ and the native builder. Reuse `target/` and `.build/` between edits;
 
 ## Independent consumers and CI
 
-`make test-consumer` runs `fixtures/swift-consumer` against a fresh copy of the
+`make test-consumer` runs `fixtures/consumers/swift` against a fresh copy of the
 installable SDK, checking opaque-byte round trips and stale-generation rejection
 through the public product. The maintainer target `make test-installed-consumers` runs the independent
 Rust Git and installed C fixtures from a clean committed macOS checkout. Both
