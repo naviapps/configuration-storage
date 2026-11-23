@@ -21,7 +21,4 @@ jobs:
           persist-credentials: false
       - uses: naviapps/sdk-tooling/.github/actions/test-rust-windows@main
         with:
-          managed-project: bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj
-          native-package: configuration-storage-ffi
-          native-property: ConfigurationStorageNativeLibrary
-          managed-argument: --native
+          test-bindings: "true"

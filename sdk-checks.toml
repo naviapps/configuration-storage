@@ -9,3 +9,8 @@ rust_packages = ["configuration-storage"]
 [rust_c.c]
 framework = "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework"
 header = "configuration_storage.h"
+
+[windows_bindings]
+packages = ["configuration-storage-ffi"]
+projects = ["bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj"]
+arguments = ["--native"]
