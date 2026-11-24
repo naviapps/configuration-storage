@@ -180,8 +180,9 @@ and an installed NuGet consumer. The Windows-only package and receipt go to
 ## Native rebuilds and provenance
 
 `mise exec -- make native` regenerates the C header and module map from the
-Rust FFI declarations before building the framework. Source checks compare
-the generated files with the tracked copies. Consumers use the bundled header.
+Rust FFI declarations before building the framework. Git ignores those local
+outputs. Source checks compare the generated files with the copies bundled in
+the XCFramework.
 
 [native.toml](../native.toml) declares the framework inputs, symbol prefix and
 minimum macOS version. The explicit `make native` target requires pinned Rust
