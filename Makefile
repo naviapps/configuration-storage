@@ -2,8 +2,6 @@ CARGO ?= cargo
 SWIFT ?= swift
 SDK_TOOLING ?= mise run sdk-tooling --
 SWIFT_FLAGS := -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
-CBINDGEN := cbindgen --config crates/ffi/cbindgen.toml crates/ffi/src/lib.rs
-C_HEADER := crates/ffi/include/configuration_storage.h
 
 .DEFAULT_GOAL := check
 .PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify check-header generate-header lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings clean
@@ -44,17 +42,17 @@ check-swift:
 # Uses the existing artifact; native rebuilds and Windows acceptance belong to the parent.
 acceptance: check check-distribution
 
-native: check-header
+native: generate-header
 	$(SDK_TOOLING) xcframework
 
 native-verify: check-header
 	$(SDK_TOOLING) xcframework --verify
 
 check-header:
-	bash -o pipefail -c '$(CBINDGEN) | diff -u "$(C_HEADER)" -'
+	$(SDK_TOOLING) c-headers check
 
 generate-header:
-	$(CBINDGEN) --output "$(C_HEADER)"
+	$(SDK_TOOLING) c-headers generate
 
 lint:
 	$(SDK_TOOLING) quality check --dotnet
