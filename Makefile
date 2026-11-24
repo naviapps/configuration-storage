@@ -42,7 +42,7 @@ check-swift:
 # Uses the existing artifact; native rebuilds and Windows acceptance belong to the parent.
 acceptance: check check-distribution
 
-native: generate-header
+native:
 	$(SDK_TOOLING) xcframework
 
 native-verify: check-header

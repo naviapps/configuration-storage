@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from sdk_tooling.adapters import load, support_inputs
+from sdk_tooling.c_headers import prepare_generated
 from sdk_tooling.native_plan import ffi_product
 from sdk_tooling.windows_delivery import (
     RID,
@@ -79,6 +80,7 @@ def main(argv=None):
     acceptance = X64Acceptance(ROOT)
     acceptance.env = configure_sqlite(acceptance.env)
     before = acceptance_source(ROOT, match_actions=True), support_inputs(ROOT)
+    prepare_generated(ROOT, env=acceptance.env)
     native = ffi_product(ROOT)
     built = acceptance.build(native)
     with tempfile.TemporaryDirectory(dir=built.parent, prefix="c-consumer-") as directory:

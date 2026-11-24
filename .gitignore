@@ -9,3 +9,7 @@
 **/__pycache__/
 /bindings/dotnet/runtimes/
 .DS_Store
+
+# Generated C declarations
+/crates/ffi/include/configuration_storage.h
+/crates/ffi/module.modulemap

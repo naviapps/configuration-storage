@@ -1755,7 +1755,7 @@
         },
         "inputs": {
           "Cargo.toml": "6335d64938d13b58faf8902954144859424f61d5191eeba3134e5c54bf01888f",
-          "crates/ffi/Cargo.toml": "6ecb3614ee5dc02725b21e1b28e344c718cb6a1f47841049858b7d5423606892"
+          "crates/ffi/Cargo.toml": "a2cb35f32e4f79f6410c069814d9630301934941404450c97353c2fb53effbcb"
         },
         "name": "configuration-storage-ffi",
         "source": "workspace",
@@ -5099,7 +5099,7 @@
       "Cargo.lock": "976218cc28ea7bf8062be337a335451e07a4ed6a0ec5509530537d12bde35679",
       "Cargo.toml": "6335d64938d13b58faf8902954144859424f61d5191eeba3134e5c54bf01888f",
       "crates/core/Cargo.toml": "e304db715b3ae8f6c933115e46d3664d62f965afd1be8025e95f77caa39e3849",
-      "crates/ffi/Cargo.toml": "6ecb3614ee5dc02725b21e1b28e344c718cb6a1f47841049858b7d5423606892",
+      "crates/ffi/Cargo.toml": "a2cb35f32e4f79f6410c069814d9630301934941404450c97353c2fb53effbcb",
       "rust-toolchain.toml": "d13306be0ecda81ce779baa290ffb417380d525928477f16200884b5169cca33"
     }
   },
@@ -5229,7 +5229,7 @@
     "crates/core/src/recovery.rs": "3b47fb5421844b89894f1ed45918dd5818a3b7c4c1cc7f9aecf74afaad7cde40",
     "crates/core/src/save_queue.rs": "d279f9780f63f95b165337ee342cf264be2e90fcc7f570944039c9411d0405f2",
     "crates/core/src/store.rs": "660119c7f37014f8d981b278f7d75d5c3800040036426d80abc4b417448bad21",
-    "crates/ffi/Cargo.toml": "6ecb3614ee5dc02725b21e1b28e344c718cb6a1f47841049858b7d5423606892",
+    "crates/ffi/Cargo.toml": "a2cb35f32e4f79f6410c069814d9630301934941404450c97353c2fb53effbcb",
     "crates/ffi/include/configuration_storage.h": "6e40d8361248a27428c8fd075b5c38e4a817344f6e9d19bd718c19c10606f115",
     "crates/ffi/module.modulemap": "4a5b636c08e518084a7cc47ccaca3acbd0847ce3642cb72049f94d704e39df0f",
     "crates/ffi/src/lib.rs": "7d08186a32480f6be7fc0ce8a32e04971bfab69d0ac531914c6f019413547898",

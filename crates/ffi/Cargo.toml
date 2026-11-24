@@ -9,6 +9,7 @@ rust-version.workspace = true
 
 [package.metadata.c-bindings]
 module = "CConfigurationStorage"
+generated = true
 
 [lib]
 name = "configuration_storage"

@@ -1,4 +1,0 @@
-framework module CConfigurationStorage {
-  umbrella header "configuration_storage.h"
-  export *
-}

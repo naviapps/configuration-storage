@@ -5,6 +5,7 @@ import argparse
 from pathlib import Path
 
 from sdk_tooling.adapters import load
+from sdk_tooling.c_headers import prepare_generated
 from sdk_tooling.native_plan import ffi_product
 from sdk_tooling.windows_delivery import RID
 from sdk_tooling.xcframework import xcframework
@@ -19,6 +20,7 @@ RUNTIMES = ("osx-arm64", "osx-x64", RID)
 def pack(runtimes, *, environment=None):
     if not runtimes or set(runtimes) - set(RUNTIMES):
         raise ValueError("ConfigurationStorage supports osx-arm64, osx-x64 and win-x64")
+    prepare_generated(ROOT, env=environment)
     native = ffi_product(ROOT) if set(runtimes) == {RID} else xcframework(ROOT)
     nuget = load("nuget")
     files = {"LICENSE": ROOT / "LICENSE", "README.md": ROOT / "bindings/dotnet/README.md"}

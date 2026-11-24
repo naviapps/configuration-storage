@@ -193,7 +193,8 @@ in the host application. Ordinary consumers need only `ConfigurationStorage`.
 
 Run `mise exec -- make check` for source lint, Rust Clippy and workspace tests,
 .NET binding tests, strict Swift tests and the standalone SwiftPM consumer. The
-Swift checks use the tracked native framework. See the
+Swift checks use the tracked native framework. The native build and C checks
+generate the source header and module map from Rust. See the
 [development guide](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md)
 for setup, focused checks and maintainer distribution validation.
 

@@ -96,10 +96,12 @@ class SDKToolPolicyTests(unittest.TestCase):
 
     def test_combined_package_carries_all_runtime_assets(self):
         with (
+            patch.object(pack_nuget, "prepare_generated") as generate,
             patch.object(pack_nuget, "xcframework") as framework,
             patch.object(pack_nuget.load("nuget"), "pack_native") as native,
         ):
             pack_nuget.pack(("osx-arm64", "osx-x64", "win-x64"))
+        generate.assert_called_once_with(pack_nuget.ROOT, env=None)
         native.assert_called_once()
         self.assertEqual(native.call_args.args, (framework.return_value,))
         self.assertEqual(native.call_args.kwargs["runtimes"], ("osx-arm64", "osx-x64", "win-x64"))

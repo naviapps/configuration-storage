@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 from sdk_tooling.adapters import load
+from sdk_tooling.c_headers import prepare_generated
 from sdk_tooling.dotnet import subprocess_environment
 
 from distribution.pack_nuget import NUGET_CONFIG, pack
@@ -83,6 +84,7 @@ def main():
         )
     artifacts = load("artifacts")
     artifact = ROOT / "Artifacts" / (MODULE + ".xcframework")
+    prepare_generated(ROOT, env=env)
     before = artifacts.hashes(artifacts.files(artifact), artifact)
     output = ROOT / "build/bindings"
     output.mkdir(parents=True, exist_ok=True)
