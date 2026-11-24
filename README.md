@@ -10,7 +10,7 @@ The Swift and .NET bindings require native ABI 14.
 - [Swift usage](#explicit-writes) and [client write coalescing](#optional-client-write-coalescing).
 - [Backup and recovery](https://github.com/naviapps/configuration-storage/blob/main/docs/RECOVERY.md): checkpoint review, retained snapshots,
   raw recovery evidence and the portable-copy format.
-- [.NET API guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md): managed ownership, cancellation and packaging.
+- [.NET guide](https://github.com/naviapps/configuration-storage/blob/main/bindings/dotnet/README.md): installation, managed ownership and typed errors.
 - [Development](https://github.com/naviapps/configuration-storage/blob/main/docs/development.md): setup, source layout, check commands,
   native artifacts and retained notices.
 

@@ -151,9 +151,31 @@ mise exec -- make check-distribution
 The shared lint and installed Swift, Rust and C consumer checks use the pinned
 public package.
 
-See the [.NET guide](../bindings/dotnet/README.md#windows-x64-package-acceptance)
-for the local Windows command, prerequisites and package output. Use an owned
-environment for Windows ARM64 emulation checks.
+The macOS source fixture copies the existing framework executable beside its
+managed output using the MSBuild property `ConfigurationStorageNativeLibrary`.
+The standalone NuGet fixture loads the packaged native asset through .NET with
+JSON reflection disabled.
+
+### Windows x64 package acceptance
+
+Use an owned Windows 11 environment with host-native Python and the Rust version
+in [`rust-toolchain.toml`](../rust-toolchain.toml). Install the
+`x86_64-pc-windows-msvc` standard library, fetch locked Cargo dependencies and
+prepare Visual Studio C++ tools for the x64 target. An ARM64 worker needs
+ARM64-hosted MSVC and Windows x64 emulation. Set `DOTNET_BIN` to the absolute
+path of the x64 .NET SDK in [`global.json`](../global.json).
+
+On Windows ARM64, for example, run from the SDK root:
+
+```powershell
+$env:DOTNET_BIN = 'C:\Program Files\dotnet\x64\dotnet.exe'
+mise run sdk-tooling -- python -m distribution.verify_windows
+```
+
+The driver builds the x64 Rust DLL and bundled SQLite with the static CRT. It
+verifies native exports and notices, then runs the Rust, C and managed checks
+and an installed NuGet consumer. The Windows-only package and receipt go to
+`build/windows/win-x64`, or to `win-x64` under `VM_RUNNER_ARTIFACTS_DIR` when set.
 
 ## Native rebuilds and provenance
 

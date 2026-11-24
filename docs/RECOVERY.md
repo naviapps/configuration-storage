@@ -1,7 +1,13 @@
 # Backup and recovery
 
-For store setup and explicit writes, see the [SDK overview](../README.md).
-For managed examples, see the [.NET guide](../bindings/dotnet/README.md).
+Rust owns the recovery rules below for every binding. The host decodes and
+validates the opaque payload, decides when recovery is appropriate, and
+obtains approval before writing. Keep existing data and pending in-memory
+edits through that decision.
+
+See the [SDK overview](../README.md) for store setup and the
+[.NET guide](../bindings/dotnet/README.md#backup-review-and-restoration)
+for managed method names and typed failures. Examples below use Swift.
 
 ## Backup validation and restore
 
@@ -20,31 +26,29 @@ let candidate = try await store.readBackup()
 let restored = try await store.restoreBackup(token: candidate.token)
 ```
 
-`ConfigurationBackup` exposes a snapshot, an opaque `token` and a `modifiedAt` date.
-`prepareBackup(expectedGeneration:)` holds this backup, or its absence, together with
-a separate rotation token under the root lock. The host validates the held backup's
-payload and passes the outer `preparation.token` to `createBackup(expectedGeneration:token:)`.
-That commit rechecks raw primary and backup identities, including absence and no-op reuse.
-Any changed raw state or stale/cross-purpose token reports `backupChanged`, requiring
-fresh preparation and validation. Preparing with a stale expected generation reports
-`conflict`. Preparation never rotates a checkpoint or advances an editing baseline.
-The nested `preparation.backup.token` authorizes restoration only and cannot authorize rotation.
-Backups, candidates and recovery copies expose signed fractional Unix seconds
-through `modifiedAtUnixSeconds`, including dates before 1970. The Swift values
-use that field for equality and Codable. Use `modifiedAt` for a Foundation date
-to display. A file timestamp describes the filesystem and does not indicate
-when the host accepted an edit.
-The opaque token binds both the verified backup and the current raw selection, including
-its marker and SQLite family. `readBackup()` verifies a private copy of the selected
-backup against that raw state and rechecks the state before returning the backup and token.
-It checks backup integrity and can inspect a backup while the selected database is
-damaged. The host validates payload semantics. `restoreBackup(token:)`
-rechecks both identities under the root lock. A replaced backup or a newer active write
-fails with `.backupChanged`; a stale token cannot overwrite work saved during validation.
-After an intentional edit, corruption or other raw selection change, call `readBackup()`
-again and validate that candidate before restoring. Do not reuse the earlier creation token
-or treat it as a long-lived restore authorization. An unchanged backup retains its snapshot
-and timestamp while its token changes when the current raw selection changes.
+Backup preparation holds the verified checkpoint or its absence together with
+an outer rotation token under the root lock. Validate any held payload before
+passing that token with the expected generation to the creation operation. The
+commit rechecks raw primary and backup identities, including an absent backup and
+reuse of the same generation. A stale generation at preparation reports `conflict`.
+A changed identity or stale or wrong-purpose token reports `backupChanged`.
+Prepare and validate again before retrying. Preparation leaves the checkpoint
+and host editing baseline unchanged.
+
+The backup's own token authorizes restoration. Reading a backup verifies a
+private copy and rechecks the current raw selection, including its marker
+and SQLite family, before returning a token bound to both. This can succeed
+even when the selected primary is damaged. After the host validates the held
+payload, restoring rechecks both identities under the root lock. A replaced
+backup or newer primary write reports `backupChanged`. Read and validate again
+if the selection changes. Even when the backup's bytes and timestamp are
+unchanged, a selection change invalidates its earlier token.
+
+Backups, candidates and recovery copies expose signed fractional Unix seconds,
+including dates before 1970. These are filesystem timestamps. Swift exposes
+`modifiedAtUnixSeconds` for equality and Codable and `modifiedAt` for display.
+
+### Retained data
 
 Restore selects a fresh database and write generation while retaining every previous
 generation file. Older writer baselines remain stale. Raw SQLite families are preserved
@@ -82,8 +86,9 @@ captures are rejected and never overwritten automatically.
 
 ### Reconstruct a damaged checkpoint
 
-`createBackup` never silently replaces an invalid checkpoint. After validating the
-current primary payload, the host may explicitly reconstruct its checkpoint:
+Ordinary backup creation requires a healthy checkpoint or its recorded absence.
+To reconstruct an invalid checkpoint, first validate the current primary payload
+and obtain the host's approval:
 
 ```swift
 let token = try await store.prepareBackupRebuild(expectedGeneration: saved.generation!)
@@ -109,12 +114,16 @@ that its retained copy of a malformed selector matches the selector reviewed for
 reconstruction before replacing it. A missing selector with retained versioned
 checkpoints never adopts an arbitrary old file. Existing fixed-name
 `Backups/snapshot.sqlite` checkpoints remain readable when no versioned selection is
-present. Ordinary `.DS_Store`, `desktop.ini` and `Thumbs.db` files leave the legacy
-selection and its review tokens intact. Other unexpected entries still prevent adopting
+present. Update all writers before using the versioned backup selector, which
+older native runtimes do not understand. Ordinary `.DS_Store`, `desktop.ini`
+and `Thumbs.db` files leave the legacy selection and its review tokens intact.
+Other unexpected entries still prevent adopting
 the fixed-name checkpoint without a selector. Reconstruction retains the original
 family and desktop metadata. The SQLite envelope is unchanged. Ordinary updates
 replace only a verified healthy selected checkpoint and do not accumulate historical
 healthy copies; unchanged updates remain no-ops.
+
+## Errors and compatibility
 
 `ConfigurationStorageError.Code` carries stable native failures: `invalidConfiguration`,
 `storeMissing`, `ownerMismatch`, `invalidStoredData`, `unsupportedFormatVersion`, `conflict`, `busy`,
@@ -158,8 +167,8 @@ is independent.
 
 ## Inspect retained snapshots
 
-Use `listSnapshotCandidates(source: .generation)` or `.backup` to inspect only
-one managed directory when the other cannot be enumerated. A scoped query
+Scope listing to the generation or backup source to inspect one managed
+directory when the other cannot be enumerated. A scoped query
 rejects cursors from the other source. Omitting the filter scans both and
 returns an error if either scan fails, including a malformed managed directory.
 A missing directory contributes no entries.
@@ -179,10 +188,10 @@ for reference in page.candidates {
 // Pass page.nextCursor back as `after` to continue, if it is non-nil.
 ```
 
-Listing returns unverified references from both managed locations. A rebuild
+An unscoped listing returns unverified references from both managed locations. A rebuild
 retains the old backup, so it remains inspectable even if the latest backup or
 primary is damaged. Each reference and read result has a `source` (`generation`
-or `backup`). `isSelected` describes selection within that source and is `nil`
+or `backup`). Selection is scoped to that source and is absent
 when selection cannot be determined, including when its selector cannot be read.
 Candidate data is still verified independently; write and restore checks remain strict. The fixed-name backup from the original
 layout can also be inspected. IDs are
@@ -239,8 +248,8 @@ let token = try await store.prepareRestore(payload: validatedPayload)
 let restored = try await store.restoreSnapshot(payload: validatedPayload, token: token)
 ```
 
-Read/write operations run away from the caller's actor. The path must be absolute
-and contain neither parent components nor embedded NUL characters. The parent
+The path must be absolute and contain neither parent components nor embedded
+NUL characters. The parent
 directory must exist. Writes stage private bytes, sync and verify them, then
 atomically replace an explicitly selected regular file. On Unix, writes resolve the existing parent once
 and use that resolved pathname throughout. The final file name is unchanged;
@@ -260,9 +269,9 @@ no app identity, license, storage owner or payload schema is inferred from a cop
 `modifiedAt` is the opened file's modification time, not an application-edit timestamp.
 Dates before the Unix epoch remain valid metadata and retain their negative value.
 
-`prepareRestore(payload:)` binds the host-reviewed immutable bytes to the current raw
-selection under the store lock, without advancing any editing baseline. Pass exactly
-those bytes and that token to `restoreSnapshot(payload:token:)`. A changed payload,
+Restore preparation binds the host-reviewed immutable bytes to the current raw
+selection under the store lock without advancing any editing baseline. Commit
+the restoration using exactly those bytes and the returned token. A changed payload,
 selected write, marker, or selected raw SQLite family fails with `restoreChanged`.
 A damaged current store can be replaced after an explicit review of its raw identity.
 Restoration publishes a fresh write generation and retains original generation files;
