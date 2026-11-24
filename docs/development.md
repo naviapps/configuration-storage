@@ -119,12 +119,12 @@ Choose an unused evidence path outside the checkout for the report and its
 companion lock and metadata files. The report ties the checked-out SDK commit to
 the isolated Rust and C fixture results.
 
-The [macOS workflow](../.github/workflows/check-macos.yml) runs strict Swift
-tests and the standalone SwiftPM consumer on macOS 26 with Xcode 26.6 and on
-macOS 27 with Xcode 27.2. It also runs source lint, Rust checks and .NET binding
-tests on macOS 27. The
-[Windows workflow](../.github/workflows/check-windows.yml) runs Rust and .NET
-SDK tests on Windows x64.
+The [SDK workflow](../.github/workflows/check.yml) runs strict Swift tests and
+the standalone SwiftPM consumer on macOS 26 with Xcode 26.6 and on macOS 27 with
+Xcode 27.2. It runs source lint, Rust checks and .NET binding tests on macOS 27,
+and Rust and .NET SDK tests on Windows x64. Documentation-only changes run
+Markdown formatting and local link checks. Manual runs can select macOS,
+Windows or both.
 
 ## Maintainer distribution checks
 
