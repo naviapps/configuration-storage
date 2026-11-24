@@ -7,7 +7,7 @@
     <PackageId>NaviApps.ConfigurationStorage</PackageId>
     <Version>0.1.0</Version>
     <Description>Opaque transactional configuration storage backed by Rust and SQLite.</Description>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>false</PublishRepositoryUrl>
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
