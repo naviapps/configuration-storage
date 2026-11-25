@@ -58,7 +58,7 @@
         "name": "cc",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "cc",
-        "version": "1.10.0"
+        "version": "1.11.3"
       },
       {
         "compilation": "target",
@@ -102,7 +102,7 @@
         "name": "const-oid",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "const_oid",
-        "version": "0.10.2"
+        "version": "0.10.3"
       },
       {
         "compilation": "target",
@@ -153,7 +153,7 @@
         "name": "errno",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "errno",
-        "version": "0.3.14"
+        "version": "0.3.15"
       },
       {
         "compilation": "target",
@@ -250,7 +250,7 @@
         "name": "hashbrown",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "hashbrown",
-        "version": "0.17.1"
+        "version": "0.17.2"
       },
       {
         "compilation": "target",
@@ -283,7 +283,7 @@
         "name": "itoa",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "itoa",
-        "version": "1.0.18"
+        "version": "1.0.19"
       },
       {
         "compilation": "host",
@@ -330,7 +330,7 @@
         "name": "libsqlite3-sys",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "build-script-build",
-        "version": "0.39.1"
+        "version": "0.40.0"
       },
       {
         "compilation": "target",
@@ -349,7 +349,7 @@
         "name": "libsqlite3-sys",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "libsqlite3_sys",
-        "version": "0.39.1"
+        "version": "0.40.0"
       },
       {
         "compilation": "target",
@@ -460,7 +460,7 @@
         "name": "rusqlite",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "rusqlite",
-        "version": "0.41.1"
+        "version": "0.43.0"
       },
       {
         "compilation": "host",
@@ -633,7 +633,7 @@
         "name": "smallvec",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "smallvec",
-        "version": "1.16.4"
+        "version": "1.16.6"
       },
       {
         "compilation": "host",
@@ -650,7 +650,7 @@
         "name": "syn",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "syn",
-        "version": "3.0.9"
+        "version": "3.0.10"
       },
       {
         "compilation": "target",
@@ -704,7 +704,7 @@
         "name": "uuid",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "uuid",
-        "version": "1.29.0"
+        "version": "1.29.3"
       },
       {
         "compilation": "host",
@@ -790,7 +790,7 @@
         "name": "cc",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "cc",
-        "version": "1.10.0"
+        "version": "1.11.3"
       },
       {
         "compilation": "target",
@@ -834,7 +834,7 @@
         "name": "const-oid",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "const_oid",
-        "version": "0.10.2"
+        "version": "0.10.3"
       },
       {
         "compilation": "target",
@@ -885,7 +885,7 @@
         "name": "errno",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "errno",
-        "version": "0.3.14"
+        "version": "0.3.15"
       },
       {
         "compilation": "target",
@@ -982,7 +982,7 @@
         "name": "hashbrown",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "hashbrown",
-        "version": "0.17.1"
+        "version": "0.17.2"
       },
       {
         "compilation": "target",
@@ -1015,7 +1015,7 @@
         "name": "itoa",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "itoa",
-        "version": "1.0.18"
+        "version": "1.0.19"
       },
       {
         "compilation": "host",
@@ -1062,7 +1062,7 @@
         "name": "libsqlite3-sys",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "build-script-build",
-        "version": "0.39.1"
+        "version": "0.40.0"
       },
       {
         "compilation": "target",
@@ -1081,7 +1081,7 @@
         "name": "libsqlite3-sys",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "libsqlite3_sys",
-        "version": "0.39.1"
+        "version": "0.40.0"
       },
       {
         "compilation": "target",
@@ -1192,7 +1192,7 @@
         "name": "rusqlite",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "rusqlite",
-        "version": "0.41.1"
+        "version": "0.43.0"
       },
       {
         "compilation": "host",
@@ -1365,7 +1365,7 @@
         "name": "smallvec",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "smallvec",
-        "version": "1.16.4"
+        "version": "1.16.6"
       },
       {
         "compilation": "host",
@@ -1382,7 +1382,7 @@
         "name": "syn",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "syn",
-        "version": "3.0.9"
+        "version": "3.0.10"
       },
       {
         "compilation": "target",
@@ -1436,7 +1436,7 @@
         "name": "uuid",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
         "targetName": "uuid",
-        "version": "1.29.0"
+        "version": "1.29.3"
       },
       {
         "compilation": "host",
@@ -1473,7 +1473,7 @@
       }
     ]
   },
-  "compiler": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: aarch64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1",
+  "compiler": "rustc 1.100.0 (0ef1bc386 2026-11-09)\nbinary: rustc\ncommit-hash: 0ef1bc386059596dada8fb65b50425aab2ea637a\ncommit-date: 2026-11-09\nhost: aarch64-apple-darwin\nrelease: 1.100.0\nLLVM version: 23.1.5",
   "configuration": {
     "ffi": "crates/ffi",
     "library": "configuration_storage",
@@ -1659,21 +1659,21 @@
         "version": "0.12.1"
       },
       {
-        "checksum": "86e055fa6e3e40ad6187ba25b6855eeb635d5271f8e0f0e1e9a5826b8d75bea0",
+        "checksum": "02f0e023adb368345ce0ca6cdfc0f24a06554468d0e8503e14a0841de79bfa69",
         "features": {
           "aarch64-apple-darwin": [],
           "x86_64-apple-darwin": []
         },
         "inputs": {
-          ".cargo_vcs_info.json": "1a869d6d3225a1120fbfeda1c24c01267a7c419f5cf3c92bb3c9f0ab855a4364",
+          ".cargo_vcs_info.json": "c5eacb45f2e3031fae2c76f63956842791d9c17c7f7e15c8d14e060bd3f91dfc",
           ".clippy.toml": "cf46251b0953d1a3c7a4f8f8941a08d8a416d5fc348dfe3f3c520eb93fcc18ea",
           ".gitignore": "95e941c39767e35118fb5dad9b60deadf20e0824e3acfe88020722491afca606",
-          ".tombi.toml": "93660cac151dd17a7ff8494838e443a15caed67aeb2faeb620c5b7450ee7b087",
-          "CHANGELOG.md": "2069467f095e9c9f859fd55c9c622ca468a502ebe068c8d36d179ab82e66a92f",
+          ".tombi.toml": "3ec54d7c57f4e0ed987f9bd4c88694451f6909b3a77e01ad993e4163d39e2a09",
+          "CHANGELOG.md": "323f16c05f68e06c94344efd673d16f3ac0a93da1819d89fd03a94c27f167911",
           "CONTRIBUTING.md": "856f7df8452d20fd5dd9f3058970fd05a4557840055a5ab742ff41cd62403552",
-          "Cargo.lock": "f3cce584a99d24801f5eb4a26e61ae15bebb4fbf5caa790198d3b9f105ab6280",
-          "Cargo.toml": "e8486afb97f4debf50ed5e80f8a5db3e36b3b4bd899db0051bb9fcbd9c5706d5",
-          "Cargo.toml.orig": "cdffad5b5c7bbc678d067e7fc45364398a404ddee5a58c63250cec4c3d1a2ed3",
+          "Cargo.lock": "4bd842ac5b87360c317b15111fc7a50648abb27c64d85fa9424521db22e6f21a",
+          "Cargo.toml": "07d4990dad09acb9c5c55054370f7a1ccc730245c15f2b7fbb340696f30e3ea9",
+          "Cargo.toml.orig": "b85c5684cbfe014611a9e5d0992a59c8a891c03391f7e3ccc10ab597fdbe25b7",
           "DEVELOPMENT.md": "77bceaf744c080cfbf27abdacaad0129c7811d3ba8a4bf7b60cf36f8eac10317",
           "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
@@ -1684,9 +1684,9 @@
           "src/compile_commands.rs": "ad118568afb173fcf8266b6b41d2b8843b75bf11d943c84ad10f5e7171fe4174",
           "src/detect_compiler_family.c": "97ca4b021495611e828becea6187add37414186a16dfedd26c2947cbce6e8b2f",
           "src/detect_cpp_stdlib.cpp": "b2ef811b2eaec1bfa305241d3a2ba26ed4c9898dc3a5a076a4ec6fcab8410540",
-          "src/flags.rs": "5c3e69c98690d4ee0e835d4ccb925febc00f34adb3bac705194af8b67b0a8711",
-          "src/lib.rs": "a9aed826af335e6ec3f316b1931f79b0d0b96eab43e9331f7dcb201c272e8db6",
-          "src/logger.rs": "0f1bd38ba4c88dad4bcbaa85365e538b696dab34ec2164f46d98f15a89333b74",
+          "src/flags.rs": "095fe8d14d108dda94a84779d49cb9b4e0e553ba8dbe534af70cf1dfd33492c9",
+          "src/lib.rs": "f9b54e48ff6faeafb2583c8544389ba85eee630b1bc8ab46d75b4c534a844314",
+          "src/logger.rs": "c0584a04a1eec3a1e7ec70c2d3d85f6f9d580ad0c2b8b3a72c41cec8ceb19952",
           "src/parallel/async_executor.rs": "aeb9a846ed146d649a1f683ccef94b64277122d1537fc50534f37887b51c1c87",
           "src/parallel/command_runner.rs": "1a9840fd011853f374ac2c9ac48e3be663e26ff05a17f50e54affe2785b6bcfa",
           "src/parallel/job_token.rs": "1502d8728d1aa7fce40d351f323167f4b9f89e6e92df206f20c845be3fb0adcd",
@@ -1698,16 +1698,16 @@
           "src/parallel/stderr.rs": "92a2e5332a36ddc9d2c31ec88993206ee6cb7fc2c42fe84c82879d2207757dcd",
           "src/target.rs": "a9d2d347a3a08015531f00b32bc8a7478f5636822cc8e0237ea9efa3f07d4cd4",
           "src/target/apple.rs": "361f95d071e60af92ca5a990976139d002da1b43d86826ff70053a34cf71ed0e",
-          "src/target/generated.rs": "8326af7c481059fb27489f732343b81153856ee398dad7948fea763956ab82b3",
+          "src/target/generated.rs": "03808efaaffaa5e73498be1e481f4951043c53ea60c80e50851a2c1bf28a512c",
           "src/target/llvm.rs": "d99aeaa81e8eb5e86cdda15ad6ab79cde1a321246706a40e99cc8d09d77fb067",
-          "src/target/parser.rs": "b2c199a9006b39bef56a526e3e547a171811be896fca4e8faa272a9604328b75",
+          "src/target/parser.rs": "edddc7a218165575130d017c50f4480c1db9f93dafe64ca9d38c7b5e40815b67",
           "src/tempfile.rs": "77963fe55b63d3a30cccae46f763b8d61ed722247fe208e8485858770f6a67f7",
-          "src/tool.rs": "84bed3207c82bac1ab64d562ee84e431852e2ef96f2d0735913955755b069152",
+          "src/tool.rs": "51c064704d02a13c9988cfe11b352c928d8c530eec9c070285ba9019cfa8ee80",
           "src/utilities.rs": "59f7bae20428fe8a6be3a64203c73473920f19ecf81ff3f0859807a1befd1b6e"
         },
         "name": "cc",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "1.10.0"
+        "version": "1.11.3"
       },
       {
         "checksum": "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600",
@@ -1741,7 +1741,7 @@
           "x86_64-apple-darwin": []
         },
         "inputs": {
-          "Cargo.toml": "6335d64938d13b58faf8902954144859424f61d5191eeba3134e5c54bf01888f",
+          "Cargo.toml": "e3cc5fa1b013ca15b9a1504ba4e2a0b05ee2fad33efbdef4f9576bedbe92d9e6",
           "crates/core/Cargo.toml": "e304db715b3ae8f6c933115e46d3664d62f965afd1be8025e95f77caa39e3849"
         },
         "name": "configuration-storage",
@@ -1754,7 +1754,7 @@
           "x86_64-apple-darwin": []
         },
         "inputs": {
-          "Cargo.toml": "6335d64938d13b58faf8902954144859424f61d5191eeba3134e5c54bf01888f",
+          "Cargo.toml": "e3cc5fa1b013ca15b9a1504ba4e2a0b05ee2fad33efbdef4f9576bedbe92d9e6",
           "crates/ffi/Cargo.toml": "a2cb35f32e4f79f6410c069814d9630301934941404450c97353c2fb53effbcb"
         },
         "name": "configuration-storage-ffi",
@@ -1762,38 +1762,38 @@
         "version": "0.1.0"
       },
       {
-        "checksum": "a6ef517f0926dd24a1582492c791b6a4818a4d94e789a334894aa15b0d12f55c",
+        "checksum": "be95d4a884358a21a199689323c29e9256b4a1b315e22f183d155422041d3a9a",
         "features": {
           "aarch64-apple-darwin": [],
           "x86_64-apple-darwin": []
         },
         "inputs": {
-          ".cargo_vcs_info.json": "8928ad7545124f4c875dff17a13d3a56e095f0de90486d1a7ee9f685a63649e4",
-          "CHANGELOG.md": "416c87b27631e696d54b47a0172e5c8bb31666b9bbacd9974cdcdb99e4fa119b",
-          "Cargo.lock": "0f69579db635e0ccfb441988ac8d204db8bba67081dfc37f2082a8d12759414d",
-          "Cargo.toml": "591ac78fc8cd99d8a31110e8cb572534bb9d04af23bc48db855a34d4a6c78569",
-          "Cargo.toml.orig": "5b1f18ecd9c18d9e4b68c01b6a3ec445e74bb17a3105c765a52bf81f3b627024",
+          ".cargo_vcs_info.json": "6bed3a38fa432093f0b24f9c25b84f1d6c93d77ecd495180f087b164d7530906",
+          "CHANGELOG.md": "3fbac91f1dfebd9df795628646ee3bf1d9aedff0159aa5c8f4358d4f7d442af8",
+          "Cargo.lock": "8245be3a5b56d2f669a20406a0d31871570b570105c8b7103a54f099f6957605",
+          "Cargo.toml": "531c13c84fc19597d9ee110fdd1bd72f6e783b0954a540d7da17f16a2eaec443",
+          "Cargo.toml.orig": "c082dfe2da1b5e3c6d335d2f3494290a9160d89194c3b69f9ba1f0a00da6dc50",
           "LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
           "LICENSE-MIT": "73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa",
           "README.md": "3c7340c13efec58e2cd06e5be3f09e2340e88e702db0aa50fce5ca9427385985",
-          "src/arcs.rs": "f60825d516ce47aaf1bbdc3797eb7a7f21d7ce2ee0a34ec127e5092178273387",
+          "src/arcs.rs": "6e9d06346016c88333e82b506f8c9a0f4eae4627643735fe51ddd33732fe4964",
           "src/buffer.rs": "48fe786c178f864d5f6cd81eb406b5cde68fc12294e11022649bd61a3f130c6f",
           "src/checked.rs": "c28ccef9a95b0a20dfe2c6c710b55399fda53802bbb1f379a7112daf5daec1fa",
-          "src/db.rs": "d730f34010436190f4ef75989ee438e75da765704a5f57dff6bf6636ceebc6c6",
-          "src/db/generated.rs": "4b845ebe4cee0554cb096487109dcfdb2e28d8a87a1a0243cd16d4089b20b94c",
+          "src/db.rs": "f0559546b09c95d82b70cfdf4980e2e8da6a050cb5a75fda0041f21d1a620194",
+          "src/db/generated.rs": "b882e80a58c5059ce88f0fe43851c9b8c78ddf7197d50dfefc20af64f849997d",
           "src/encoder.rs": "6e0fa355f4b3484a0b7b417f027648e5057a565a5b33408b0b6ba274e134e006",
           "src/error.rs": "07d7f59e79ac0d1b6176f163ac8ff013db78b72103b7e35b41cc218e3f04ca1b",
           "src/lib.rs": "75a1fd845a0da56368da0942d954f6954f9fbfd095a217faf604c3f2aa8431e8",
           "src/parser.rs": "29b2c1897b9f76a3869279ec2e32a4ec5d7653279e3b3eaec958617f3156b426",
           "src/traits.rs": "d830d76e65f4ec2e48a1a6b71b5ea59456d3d061e5b7294a8c5c6a90bf3715c1",
-          "tests/oid.rs": "cdfc7c78ee43b0f01d12a4ad11b96a3c0e765943d1d8128b6b1d1b5566723fd6",
+          "tests/oid.rs": "2823c95410a9a4023f1201f868b016c5e36b5bfa6c4cce5e4488d011847c97a2",
           "tests/oid_ref.rs": "3ec3e6db5d5ef762db7d6c07ae6cfbb33d3e2bd0f9c1e97542fe492471a72a3b",
           "tests/proptests.proptest-regressions": "7452bd3fe6f7de897d46cf1335e22dc88dd46af5758253c4590cd730c7c53fd2",
           "tests/proptests.rs": "5054b8afc9488d3f6513846e0c8ae2d3ab1d2caa8c5d3cba3f7ba36f47b9aeb1"
         },
         "name": "const-oid",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "0.10.2"
+        "version": "0.10.3"
       },
       {
         "checksum": "5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566",
@@ -1895,7 +1895,7 @@
         "version": "0.11.3"
       },
       {
-        "checksum": "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
+        "checksum": "e35d6e78f4cebb90e51d543db8fe41528851d6deeef6ef21ebd4bfdc1e784776",
         "features": {
           "aarch64-apple-darwin": [
             "std"
@@ -1905,28 +1905,28 @@
           ]
         },
         "inputs": {
-          ".cargo_vcs_info.json": "27df27e26defb9e10fa3f2f00e800657237bae0c33dc00c38fbd1c4d4ed47fdd",
+          ".cargo_vcs_info.json": "ad060efb8a390f1ec105a56a7692ac3e47288f18c336a1165801d3c1ce4f1e8f",
           ".github/dependabot.yml": "514557e7c5180a3f89e89cdc98112fd32c362216ae8478bfac4dcfee874f330f",
-          ".github/workflows/main.yml": "e917468e0ddc7271bd05463572d7f8d2e61ba97bb71977e3d415a219aae0c2cc",
+          ".github/workflows/main.yml": "5fd81c3f8c73c795f4723c0fdff13e31583b30b6326c3cddd207e423aafedc0d",
           ".gitignore": "f9b1ca6ae27d1c18215265024629a8960c31379f206d9ed20f64e0b2dcf79805",
-          "CHANGELOG.md": "8e2bbd60d570bdf1f36df193608f7d1b982b644a9e9e40f90a9ab33d7a67039c",
-          "Cargo.lock": "631e3df2b909e0b2012fe10fc22f081290deb1bdde74b9b79055c3636162e385",
-          "Cargo.toml": "a25f16ccaa127602fc0cc9d1c80186619a0b8f42331a27b6f04b6bfa4aa29de2",
-          "Cargo.toml.orig": "d6bf736fd0ecec39ee8ace1ad1c3e514e82fe22779d2c13eea0875960fe7037e",
+          "CHANGELOG.md": "e37693c93533842eca5fde280bc71fbb190c917d254ce02e55432bd8ff2b6896",
+          "Cargo.lock": "d785cfa06df0d8edd49aa9cd0aba0b7088825abd28e02140a5720543b2593bc3",
+          "Cargo.toml": "74c8958deb1ba1e914a1d657f99f966a12643f3d85d9047b6e433500191c49dc",
+          "Cargo.toml.orig": "15edbd2a32e6517682cd71b1d55f1ce6f5b9ad27335cb136ffd87bf89f624676",
           "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "LICENSE-MIT": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
           "README.md": "c3054b1c0013a44cefdfce77d86308fc14d26b5b17feea831a0fedb2ac940b37",
           "clippy.toml": "6409bb805741d8bedfb1e58eb0ce4b63bd1d384ad5e29b7a3c0997a872f31206",
-          "src/hermit.rs": "ad03355bc4d79c180ab3210e1d3edd538eccaaea8d4f9a9b7eb8a0dc2d39b5df",
-          "src/lib.rs": "abcf06f19da51626d557d8f53955b3361a3f2a86a89227600d01f2d5c2f5562f",
+          "src/hermit.rs": "cfbb677d50c6a833cb9da646c942e54b4bd4c2b45960feceec2d2eb42880cae6",
+          "src/lib.rs": "c25897850de1ce5e6006c456d13d4ab640f3c4cfd0e3a92b520c815d5c3208c7",
           "src/sys.rs": "eb065c9f20decbcd4afe2191b0aaf3a7c5808527e7f9132731fd555044c9337b",
-          "src/unix.rs": "66c64603798cf7d8701de5be077b814b09a324b42ff460e9448686b4d8a330a7",
+          "src/unix.rs": "86a3fe9c90ee22817ae248e127180f7a5d1578986a9981853986f513b37a04d8",
           "src/wasi.rs": "c83052e5c45c31e2a4630c00a4d0b92f39205774a4d419b4aa5c06dc5992280c",
           "src/windows.rs": "7cbcdb8e74582f357fa945bb1c44c4d19c1a10bec958da1223305bf68ec35baf"
         },
         "name": "errno",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "0.3.14"
+        "version": "0.3.15"
       },
       {
         "checksum": "2acce4a10f12dc2fb14a218589d4f1f62ef011b2d0cc4b3cb1bba8e94da14649",
@@ -2126,7 +2126,7 @@
         "version": "0.4.3"
       },
       {
-        "checksum": "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a",
+        "checksum": "735eaa21a6a5ffb2e84362faaeb90c05ba8e19797ca30428478cb6ea3a4921bc",
         "features": {
           "aarch64-apple-darwin": [
             "default-hasher"
@@ -2136,31 +2136,33 @@
           ]
         },
         "inputs": {
-          ".cargo_vcs_info.json": "b41a5623404ae232c5432fb7dfeb74f93c40f532ae057179b9a8b00982a006d4",
+          ".cargo_vcs_info.json": "8cf28f4473f58265b0d0482d5ecd583b1a9cd1a622b08271cfa6060b50b2c6c1",
           ".gitignore": "6b937008e0a58a438c32574627db6961a4d2aff4bf5c703d4e45cb56ef3b168a",
-          "CHANGELOG.md": "dddef7405a9fccaffc2ca6c3a76f602bb2d2b4caac35370dbb0a3787ffcd4993",
-          "Cargo.lock": "718cdd290a7ed54fa011baeabe23779746318ec79e6f02918b423fce8bdc05b9",
-          "Cargo.toml": "afcb0e62d498f756bd4ddf69785c8282d01ee4fa40016158c7eac12ceb302f8c",
-          "Cargo.toml.orig": "3e1f9929f381f46f969ea49faab281dc3c6ee08b24ef41f3ac8e2eec209ca078",
+          "CHANGELOG.md": "0858961eaeb4feaeb642bde391c572895bfec15f408bdf69f4a198fc42371e3d",
+          "Cargo.lock": "c840fe22c2b31657027c9c7b4ee18cc62aaec2082bcf3f8e031d76c6ecec401f",
+          "Cargo.toml": "9a0455dd00e68c6dc1d9e9acd3af92ee9e544d550c82a45c29dd8e087c1bf11f",
+          "Cargo.toml.orig": "6eb80f5f76209c8354c1b35d903f938e535623451e6d3f762efab760be6a4f75",
           "Cross.toml": "47aeebdfd782a5052346ce29bf750c225828e108aca723486c3839adba5d6901",
           "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "LICENSE-MIT": "ff8f68cb076caf8cefe7a6430d4ac086ce6af2ca8ce2c4e5a2004d4552ef52a2",
           "README.md": "d58265d24271a49876da9c77eaaa00093e01e41011e7e603da1f738ecdec4f47",
           "benches/bench.rs": "63fb7937742da3d6223e5b52beed98ac4b4b27b712d13cf71da22d9d025d8f18",
-          "benches/general_ops.rs": "82430662ad66109c3b1026edf8ed89faee09a23fd34291cf7b2e68903ab5f718",
+          "benches/general_ops.rs": "29bf08a7e523057d3ad96c97b52dfc39d8ead7ff43344479bde1b547fe501e0d",
           "benches/insert_unique_unchecked.rs": "ed3fad0a5c5ca654f0ab16694cb48152046d5a503e85902cd83cbdda7d9c89c4",
           "benches/set_ops.rs": "14ba987967d74eae0f0775e20371c14aa533032bc03cb6a48653c12f32df01a3",
           "benches/with_capacity.rs": "65efebbedbb9ede57ba8b9e60674358e4dd6124aadc58ffa3084b4b94d2ed65a",
           "clippy.toml": "b350f0ed39349f1151326c565f5ea8dea3cf9e2a708c33b435ceb5f98ec5237c",
-          "src/alloc.rs": "7ffdd9a84787cb1f93b31184c32733649324faf500bcc3012197ee91353c9ac7",
+          "josh-sync.toml": "95a368caca875b56bdb40324b01aa6f4842d2ab32a2188d82d0837ed62b5fcf1",
+          "rust-version": "3538de022643022d9f7856dff445e079bc1513a70e765e7fe0815ac863e97142",
+          "src/alloc.rs": "b21d51db59fcfc48d30703198bf523840995b0712ec9f070e4d43232f0a6ad4b",
           "src/control/bitmask.rs": "5aaa52db03d2d17fe85fed67aa2bdc4ea376a0bf0e18010576e794b502d44689",
-          "src/control/group/generic.rs": "5d244fc9f9cd05ab8b92954452b43d8c321452d0dfa8816c2b1ce539fbb3270b",
-          "src/control/group/lsx.rs": "2b27cf856196f1e1a34ff91f3a70da711d94d13bb68d669478063748889cdd94",
-          "src/control/group/mod.rs": "32150c3ac5bd4197ce122fea5b45ec1047c1e5227a4ba940aef6ceab2c00f54b",
-          "src/control/group/neon.rs": "bd8366684d86f456b9880940bbc72d7aabfb642d88a7bdd90de66ef7f643fae5",
-          "src/control/group/sse2.rs": "53d7d09c72332232b4562aa7dfabf18e5f57c5009a672b2cfac7193ef468b349",
+          "src/control/group/generic.rs": "10a9fc54f7069ac64b4510637fe2c2a2a24f9071d20362446568d113ca3cfb47",
+          "src/control/group/lsx.rs": "ff0cfdde6a292e79f50fc1a1f66b697a8e63ca30c8d8d0aab0ffbc34d6698423",
+          "src/control/group/mod.rs": "c676b53609cedbe2ef32e576aad54dc5f28ad5a4490c078f646a73eb632d3945",
+          "src/control/group/neon.rs": "b741f7fd505a378b226f6bbeae42f09c2826ae0c9749b82d59e5eb6648cd77be",
+          "src/control/group/sse2.rs": "48d6a32bd33cab31ad02da118d7193c960c096f5619814613b927a5292cc0226",
           "src/control/mod.rs": "83fede19e9c5a26fd2c7372e6cf92547d32ade4cd69fde8a0eaaeb1be6ddc2ba",
-          "src/control/tag.rs": "691dc7aa8d720e6df59a82ac11d66c72802ffffc684620c8ff29523352aefd13",
+          "src/control/tag.rs": "497ba44e1b8097f3807bfcf2d03af4a027c055e9b6131bc28c9bca7519c81684",
           "src/external_trait_impls/mod.rs": "d69528827794524cfd9acbeacc1ac4f6131e3c7574311e6d919f818f65fbff07",
           "src/external_trait_impls/rayon/helpers.rs": "1d882a124ffbdfd168796dcc3767205cb578d0643fdd91b768efea340fbdc9ec",
           "src/external_trait_impls/rayon/map.rs": "2819b0e7bb77594710a0173d2a7bda318350096f79d0e0e3be4e92c616d38f69",
@@ -2170,26 +2172,26 @@
           "src/external_trait_impls/rayon/table.rs": "6703ed24b69510b74a6777388d6fe303f8838c740c809ea4ce5e9c87aec088df",
           "src/external_trait_impls/serde.rs": "cbb5f60e0b093730a340e6133b0b5f5842ba6398a454acdabd635ae75c1d8010",
           "src/hasher.rs": "939bc4f8c9e2d7e7ace266a8c121360ab4b44ad0540cdee06951e0197d96bc3c",
-          "src/lib.rs": "23de74f311e3584574b39041df306b0cbb9ecb700ed33fba1e02ba9d26f70a23",
-          "src/macros.rs": "4c949a8c44e457c4f04f0b55d5c1e0214b52a6ed2951f265af0113b0d2adb015",
-          "src/map.rs": "b79497ce537ffc5ed4f8f3399434b9216c01e7927fdc434fee190e9e9ce2abb0",
-          "src/raw.rs": "0c8ad353ba95817e72b0a8fea48fa2599099ea3def374f254ab6402a9c468d22",
+          "src/lib.rs": "66a61c94dff44a0dcb2db327029ad425beee1b6c9e689c0427024f7854ec04ee",
+          "src/macros.rs": "81fca1d2f1b8e812ff2aaaea26e28bb04ac96c9388464c010b62bd08c09b61e5",
+          "src/map.rs": "ec2f436aad4e71345481fbe6cf279564b627e5dc479cc2d584a8387ef4f0846a",
+          "src/raw.rs": "fc20094ab11331b6d53b1a077ffe86d2bc459d1f99f71364d4d0c0101228b424",
           "src/raw_entry.rs": "6393317a9818e2a9121b76d53083cd5ce358bc63e2702e17b9c138914d6842ee",
           "src/rustc_entry.rs": "35212ecf4d0195954aa6ecc6c0b8e99a8628dffb4fb101fa67d3d7a31a52b837",
           "src/scopeguard.rs": "aa557686a2090eee1da25e960a4461d3750725065a4a1266b80a2eadfec38b2a",
-          "src/set.rs": "71485eb08e622a7aeb1978817233f0e9c75f4daec87d2d6fa6eba6e0aaf80f2f",
-          "src/table.rs": "9d37739758f9df08d23c3ab792d29547b04bfd29b08900407a0d2b8ecd26cda9",
-          "src/util.rs": "02546d6e681f833405b8a15ef9bc8d3e80b1ef3bce65caf70d8e16cbadf4a410",
+          "src/set.rs": "ff6aaa61153e97ca8b643eca1463f22d032d5d8ad3402b61e1c1004a2ef03d64",
+          "src/table.rs": "b26ec8acb9c14d01167b114db25e1457e3f0a7f223d773108cf1a0f2ae1eb2c1",
+          "src/util.rs": "348b3163017a5ef75fd49313eb42cba1780af93df1efa8a26a98d02d39ece572",
           "tests/equivalent_trait.rs": "092e4b137b6abf7d57277f77ebc4f3641eba22a650dade79f2b0d793062627fb",
-          "tests/hasher.rs": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb",
-          "tests/hasher_unwind.rs": "d36a1650a5cf7a5f424250d80abe8496385f6395e37fd9262262724c22306a0f",
+          "tests/hasher.rs": "ef21cc5a73193fb4506502c1a6626c6f371c684531a3c69cd3afad76d5050b7f",
+          "tests/hasher_unwind.rs": "5c816ecfabe14be8be565ad3e392bd31dd1a281550c89419f0b3084b0b29e255",
           "tests/rayon.rs": "5470842da0372b03059de3c8eaeb59b72bfd52eb76026d0eda51cf4634047add",
           "tests/serde.rs": "27689fe22b6301db7fdf01de19be621b2d9af7d2ad157c000600bfe760f1cbb3",
           "tests/set.rs": "dc4e546c94f95869ce85f55ce8e10b9d100b7b0ef6e80e1720b94af621f45ed0"
         },
         "name": "hashbrown",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "0.17.1"
+        "version": "0.17.2"
       },
       {
         "checksum": "a596f1b20ed2cc5ecac41a164aaebc7258057060f06c0cf7a2ba3991ee7990fb",
@@ -2260,30 +2262,30 @@
         "version": "0.4.15"
       },
       {
-        "checksum": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+        "checksum": "3bd1574e617a9a6c1f8f8181bd7e841e1f20e4277607ef28945765188d6284d4",
         "features": {
           "aarch64-apple-darwin": [],
           "x86_64-apple-darwin": []
         },
         "inputs": {
-          ".cargo_vcs_info.json": "e0165305f3b22a9ab4217a121f85379aa56c2675caa7afedc0a7468fc187600b",
+          ".cargo_vcs_info.json": "59616383194141d6a182c648abed2d6da67917aba21d843564a773d1eacb5496",
           ".github/FUNDING.yml": "b017158736b3c9751a2d21edfce7fe61c8954e2fced8da8dd3013c2f3e295bd9",
-          ".github/workflows/ci.yml": "89c4f60223daf03217ea7c1e8879135b11d2554bd1e57dd9eff5c02f1adc7909",
+          ".github/workflows/ci.yml": "5d197e7af15a1e5c2ace39c33e5196b9a76244355609c7681283ee9f16e5ceec",
           ".gitignore": "07d64eb09a56c853b7853a47276799b38d7d6d25a4314b0c1abc10432c214e17",
-          "Cargo.lock": "1cd64090b8e883963bb08d91e6968cc1e83ffdba4f4b2f47651ce9d351a8a947",
-          "Cargo.toml": "894c215e4e7e973b556b0e9627bf9b6a719a043fac9b5af9838660816392a09f",
-          "Cargo.toml.orig": "44ca1ae5d9b48743305b57f3367051289512037e7836b8b3693b68d48dec0483",
+          "Cargo.lock": "1265f5c39ddede9af0c34bd08566dcf563d88eb239f5106fb0dffd79930a4d93",
+          "Cargo.toml": "390761f23126428f121c5c23dff87d42d9e78a2c0ac5031a59605b7eda8cc356",
+          "Cargo.toml.orig": "e5c0e93914f73b0e0473f59b24c7f2a82370bd474b5aa6dbf3be1c76c1f79827",
           "LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
           "LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
           "README.md": "1305bd79675db0194915d9bc91bd0b3cf9487bc1126e05bf46b48ab43edce44b",
           "benches/bench.rs": "29a0bdb973848007d681e571c57487e21e1bfb7aed5980c2190dba354498b154",
-          "src/lib.rs": "e962338e1886873aa7c3399ec89aa5378ccbfed712b9690f043628079390a34f",
+          "src/lib.rs": "4289a1fc5c20e8927f4ce27d1d0f085ae0f9fe7b666462dce92bd36466e89829",
           "src/u128_ext.rs": "498cc94f13805e551248fd82f47cc318f51d953a5002a9f8698858cd12fbae3c",
-          "tests/test.rs": "b22f8a8ed89edcbb4140b74f5edd7f2adf3cb0e363990dd6010cd6ebe0dc36b7"
+          "tests/test.rs": "fca9b50e3f7ddb9466a69f682c2e624b2102c619f3fdd4e63e39a8bc1f2ac8e9"
         },
         "name": "itoa",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "1.0.18"
+        "version": "1.0.19"
       },
       {
         "checksum": "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a",
@@ -2756,7 +2758,7 @@
         "version": "0.2.191"
       },
       {
-        "checksum": "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3",
+        "checksum": "b06e69070b7e12262b0cd90832f0a7396f142a2b330181255562decf9f0c6215",
         "features": {
           "aarch64-apple-darwin": [
             "bundled",
@@ -2778,18 +2780,18 @@
           ]
         },
         "inputs": {
-          ".cargo_vcs_info.json": "f410bda919d68f688b35fb4fe324b8a506dfcfebcc4b5b6a31a1885d806485b7",
+          ".cargo_vcs_info.json": "ef2f5a6e28f305a7fcd85c20526390cb4f6aa470b2106a51f174d85a0538a047",
           ".gitignore": "d89b7a44f37a816f5b0ca8297e0d17067ca5f41e45d1455b0a56d072679a00a6",
-          "Cargo.lock": "2d92ba6eb01ec3fd049051d66dbe040062139e380b475ccb7d5ee62e89c2e5b2",
-          "Cargo.toml": "3fb7e11b7b71251e7e360511000befe692e5aee8d31415d477774f060577bb15",
-          "Cargo.toml.orig": "be5ec76809a60444ceccf8fc823d2c0a660f549f270f664ba0a8256b574bedcb",
+          "Cargo.lock": "5c2fcbfd4cee61521231a2bfb613c84081d94fd9347b7956d5933acdba31a78c",
+          "Cargo.toml": "4d652f24e5f1caefc2a5a2a24c05937462501c87f792af974a8f8873101cd204",
+          "Cargo.toml.orig": "1b08fcb0fc603d997617efc484d754c0b6c365009a4f5271a7cd76981fdd6b67",
           "LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
-          "README.md": "37bc68dfc68170cb60f5dad7cfa64a6bc74893947e9d466575ca2c4c00ad6061",
+          "README.md": "4b80f2311448be143c00efccf6174b937ab0c03924ded2a8e6aa92679b88aba6",
           "Upgrade.md": "d151a67d4bbb1a5a300d084d210d6cd238d833a6d4bd5d958ae7469a9deccb36",
           "bindgen-bindings/bindgen_3.45.3.rs": "2633a8b90cded7bc2c8464fc423891a6dda7f68a72fcf433b3a5408aaa8f37ce",
           "bindgen-bindings/bindgen_3.45.3_ext.rs": "35d3d3f2388bfeb6d950242f0efa217541d2eb0d686195f41eb9ce9cef86f99d",
           "build.rs": "769b31370a41aa722e1d5a530012432c985bb142eab34d095481ffd1a3436e1b",
-          "sqlcipher/bindgen_bundled_version.rs": "4ce4a6519255f9d1c22c9f894b7f0452f1ae11d54dc9bf3205265ec9142f1da3",
+          "sqlcipher/bindgen_bundled_version.rs": "f5cd246c4e26fd7dee1acb71ab6b28d0e990aace2d4c9c4820a089cef49e0cd6",
           "sqlite3/bindgen_bundled_version.rs": "a25057a06d8cb5053a61c8f0ff746cc3d81b3bd778fbd3199ba12c8a6ee2945d",
           "sqlite3/bindgen_bundled_version_ext.rs": "b4757194d9f463c9c9168d38f943eedfd2a06d7c402374a75062e6fda8d4ff2c",
           "sqlite3/sqlite3.c": "0c657666d819f261cc4007526ad57e1669de9949df7a8ea847aa284a2bf0ee52",
@@ -2803,7 +2805,7 @@
         },
         "name": "libsqlite3-sys",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "0.39.1"
+        "version": "0.40.0"
       },
       {
         "checksum": "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98",
@@ -3064,7 +3066,7 @@
         "version": "1.0.47"
       },
       {
-        "checksum": "da9bba6f3506135e120a6586df05be18b48d18896600646a4bec8f993d91a594",
+        "checksum": "f172c4812a19b26d1c23cdb0070e69db335503dfa378b910eb857386e5b8beba",
         "features": {
           "aarch64-apple-darwin": [
             "backup",
@@ -3086,16 +3088,16 @@
           ]
         },
         "inputs": {
-          ".cargo_vcs_info.json": "45d55c9a95adfc19beb24dbab71a919fa58a8a86cd6bd31c9a69b8975017ab31",
+          ".cargo_vcs_info.json": "a7c33ddc8a7a6f773ecc9e7f8e765b8f895e1fd4e9029646a910694af0476c2b",
           ".gitignore": "d89b7a44f37a816f5b0ca8297e0d17067ca5f41e45d1455b0a56d072679a00a6",
-          "Cargo.lock": "b709f7b0107b05f4903db7855c89d649d00abccfc975d40df1ffafb652c3df5a",
-          "Cargo.toml": "8a18d2cfc64f75140c5d23633bbd2bbbc77d719a0c3d844f8929cd6bc319f9ed",
-          "Cargo.toml.orig": "5f9392a9ebaccdbb0ddf5cce153fe4da42d38c80277acf02dd132cd754327947",
+          "Cargo.lock": "e9e7f8ae3db36f712fde48c7c742eb0af61551c64602b7cdb6386207fb1de6a3",
+          "Cargo.toml": "fa46642caaa73de23cb42fc6d4b311ee857f78e0f7cb04f421ef1a13e6001644",
+          "Cargo.toml.orig": "6a75e91c20e31b24398d768f946aaa4786483383dc3f43d0faf115e4d0ddc7cf",
           "LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
-          "README.md": "c98a303769fa5a1fb4c417bd8a1ad4609183e759e5a3a61b01419d7c189545e6",
+          "README.md": "141d17c8d168037f1a03b9e5e5a0d300178740295afa00ae1be19db2aa980749",
           "benches/cache.rs": "f7c8faddf9843c9c0af166b2e3b6a7481981113d3daeba81350fa685b72009e4",
           "benches/exec.rs": "5659a91565d1bead2a694265458ee0b68897aa2c94d75af838d82f0363e99718",
-          "bindings.md": "a7ba9b76eb2b275a7764db1b2e4ac367a4af73f7057ec1580da27ac2fbead1af",
+          "bindings.md": "226ec64ec59f96399a49a6cebb1940f9126de45ff7eee3bb120ae126b3357d7c",
           "examples/load_extension.rs": "eb2797b68952511dcf4a7fc9c597d515d43b6bd37374f7f9bdf3ac42e92107ee",
           "examples/loadable_extension.rs": "f53d73b487181eceaf1349687bdafc8127ba770fff06b5c33eba56f17fecd84f",
           "examples/owning_rows.rs": "9cf41bd2c7b426eb45e18285d8175d8250df2ce305f7dd1b2ee29eb93fb312cf",
@@ -3107,61 +3109,64 @@
           "src/bind.rs": "06d52fba5fbdd33984754e1743ce020e5894027092a366652ff6e4483d9e14b3",
           "src/blob/mod.rs": "bf00fe6f038800eefc14caa5dee6194b55169afbbf27113bbbe7052e0c3b2a1e",
           "src/blob/pos_io.rs": "681fcb15fed883abde163081bb7f37b5c5945c5955d9a3818a1dc73a459c1fee",
-          "src/busy.rs": "d97ce210358eec98f242f0077143d157e958ec2e8ef9fbeaff2273b4f913ee29",
-          "src/cache.rs": "aabbbd6f1cb4b1961d1df4e60545def916a2564183a9c6fdf51257713523cca0",
-          "src/collation.rs": "f7c40bbb31202f98be807569649ec4b3d60bb26788205bb90a3c1ef88874bf2b",
-          "src/column.rs": "437a4f2cacfec1264b2fca2cb5b32cd0f39292181a26c6a21d519adeba6d5259",
+          "src/busy.rs": "cf100791e85575fb3282786579befec4265c01ba1b97bf7c6b314fe75fa04d6e",
+          "src/cache.rs": "4425ac5192d306a03c1181ec80f69499a7467ef6a253dfc2c243a46ec36e7d2c",
+          "src/codec.rs": "e9f3bcbd68a086d0a1f38404bdc44a88d98488365d4357dc7ea18caf8ccbc8bc",
+          "src/collation.rs": "60a0e70f9969d276e857b6a3ff242987ff466c3b57323ede3d01adf3a4c6ce42",
+          "src/column.rs": "2f736298896986c2296c12050c92df0b3e7695848a275f0fca2fc438d12acfed",
           "src/config.rs": "3f6cbf6d462a27a5e96c2302cf19a59bc85425a3ea3c39e42f9feb727394a4cf",
           "src/context.rs": "862f79e246c4831b4a9b5bee6b68ca6ca232c72e0081a57d0cc01ab564cf6d11",
-          "src/error.rs": "390f9c2a9a6c915602d56ab2926a57c6fe2519c109148b4a1d242444aa20102d",
-          "src/functions.rs": "5a86b1e1fb178206b4f18ffc67e70d26faa089ac783b5d130a9bbab1b80864ae",
-          "src/hooks/mod.rs": "02a5a555fb6386331ca6411565e9806c69eb196e25e6433fd3aa4681892d65c4",
-          "src/hooks/preupdate_hook.rs": "5d2125438258f63b7d4a135aec7148cea2f6f8ce6cf2578b281315250bb13e8e",
-          "src/inner_connection.rs": "dbe6cb6561ffcd7a35bd4210648cfdadc0e500829b46363bf34ddec311b99e42",
-          "src/lib.rs": "9eaedb45cb295a96c31c5dfeb82542fba472d3438ed69fb8b88d1f7c18bd0001",
+          "src/error.rs": "4e42870110cce0b25c035f94a49ae37033cdf4dae006c20c6b2e3cf00670d297",
+          "src/functions.rs": "88c0f338d9391125452eb7558e2aeac45498622a3124527d5b3f6a279c6730d1",
+          "src/hooks/mod.rs": "97cab75e34ce0438a3346b64bbd925ad99b3b7bab8cbeb20b33f1eaac4a96873",
+          "src/hooks/preupdate_hook.rs": "dad5c9281d64adc781e19940adc5932e00fb67b20393972e14270c675d7a7bfa",
+          "src/inner_connection.rs": "a992130426e471a167fbf2fcb03de57a66e8e3344ad83b8b2a4e455dfecb8415",
+          "src/lib.rs": "d8813291fdb6d4c68e4ec9541ad2f4d709d37b14c10d0967daed2efc10f620e2",
           "src/limits.rs": "e585d4d820d09e20c5bcf9982ce1ec63793516878d86eceae2fe9af4bdb5d7b8",
           "src/load_extension_guard.rs": "d0941ec8778b46b4c913053380ca7c75bd529dcc2f3f06b7c033554d2c9d2518",
           "src/params.rs": "82c8577a226ea206574ebe965797c7ab47446df82f4ecbd1530973a6af0bb221",
           "src/pragma.rs": "db7854969eed86f01a9cb87c5a522fc60602a350d1a6737ce5e7a75f1b6820e5",
-          "src/raw_statement.rs": "3ef19352ae332c93d53f5a86043b4c64b91514826c1f440a5fcbc7b6ebea806e",
+          "src/raw_statement.rs": "e01ed71f9ba25c5e32538eceb4accae58bcbfc1cb452d8d343e554f516c378b6",
           "src/row.rs": "8ecaf7550df88a2786c427170ac0e28232f112b64a3880945351fccf27a976e7",
           "src/serialize.rs": "f2697d5447d4071bb494277325adb3b703a9675cf8d79f618728512e5bbca880",
-          "src/session.rs": "0f96dac4e0f5f108cd6018b87dec47a071d4507874ce3fcee8e624f6b643b05f",
-          "src/statement.rs": "d92783eb909ec4eae6deb8b5df240861e1785325024b6754310fcd6023b0bbb2",
-          "src/trace.rs": "d713fbacfb888ab8ad40949f14df1564ea6542e8c772849151344290d52f1aac",
+          "src/session.rs": "e238339ba83dc9e5680b0cc212b140179ee2449e063676a0e035008971dea857",
+          "src/statement.rs": "c2e91c301753463f63eb3890c6d0b8ce25f30dc6503a49fbc662fc2030e78a95",
+          "src/trace.rs": "2f3b86acee86e423704229830539c44f7c38ee60bb2c54d5b659d1ae079c89e4",
           "src/transaction.rs": "090ba0b99f970ac5845a6bb7f41758ec7775720ac5ff1c9b71dfeb1a70ee278a",
           "src/types/chrono.rs": "7d8cc6f512269d975821ffb4d613dd16d5b7efeb36de3b7c18e7673772d99fe6",
           "src/types/from_sql.rs": "290483c0d7a89c63ebba8a803cfe09a76a1a024caf58f8fe33e53eab8d8e3518",
           "src/types/jiff.rs": "2659706ac97073e3d569b6eaf5ca6d9ad1cead5646352b4a36412eab46c74d57",
-          "src/types/mod.rs": "f76310e9edfbe7512c1a1ab1994e60bf04ce439e36e12e499c3c9256f4e8e0a7",
+          "src/types/mod.rs": "f70b1789a922a91677ebf50e46214456c82aad024b5199fab74d00ee784dfd71",
+          "src/types/raw_value.rs": "4c47077fda19b2d730f324ca7322c6130da94bb35d91224186a6d6e06aac8151",
           "src/types/serde_json.rs": "421e0f13ddb4d198db92b794c0e0798a875a59092399ca0cdd0d12abc51a5b5e",
-          "src/types/time.rs": "7e692e10653ed35a012f48e4c02b3d36d8b74d914f7907cce83a75997dc516e9",
+          "src/types/time.rs": "c6f541fdbad1a0f17968446cc69919013569589fa3d1fc135e4bcf0d04ca09ff",
           "src/types/to_sql.rs": "829143a4a990d4b40c440a46ae2915596fdfa853429118b677e39b0d01d855ec",
           "src/types/url.rs": "81f8310c41a1d12101025af6ac31d6988308826598d9e66d15ae68052edcf849",
           "src/types/value.rs": "ed8f1b162d27511846df9f4000927a316e9b7b7a022ec50717d3f031388fa402",
           "src/types/value_ref.rs": "fa67fe4c77f988b218caba9b8a9d8bd30a5915ce82852a02712139b4d5db2abd",
           "src/unlock_notify.rs": "6e942e0f36e2bd2a0fb2e3e08987ed438824f3add4e8972db4803afb6a7ddad7",
-          "src/util/mod.rs": "ab7d66b2da537e4497645f09487dacdaa5b7b0c482941072d5682afa7760a2b3",
+          "src/util/mod.rs": "86800bb7c118bee0385117cfeda90e267cd7d4d199292991db6e0bcc7a760134",
           "src/util/param_cache.rs": "754971ed9204b0a6e718d2d60408a161cd4fc53fa9cd361c1134f436f7a91253",
           "src/util/small_cstr.rs": "cff88ced7f1b8783568783325b7f27f7751db5fd3bd3ba5972e32df705010cad",
           "src/util/sqlite_string.rs": "3ca45af4b0b8dee5c2b70b5ed68161e276a2d3844ce31bff157dc2158d37c85e",
           "src/version.rs": "392b327ecd9acc1d289f92abb671104b065e232368456b0bbd5bfaca96d90950",
-          "src/vtab/array.rs": "8a9d85f3aff330b530ca34aa8780234c8daf23ca697e091ea1eb112032d675ee",
+          "src/vtab/array.rs": "31dc025a7ea4e5b4eb04b30f6e922758cdeae663984ffef1d2bd75fca1060ca2",
           "src/vtab/csvtab.rs": "b0a0acb596758527d7505ccecd0e179c7658d2e285bb5a1d149bf60637a711f9",
-          "src/vtab/mod.rs": "bd6203a11d097d6271c382d5108cb8f29fc5f669403a80b2457564fc3a5b3b1f",
+          "src/vtab/mod.rs": "b62ee4a4195ee92815100bb3d7c6a1684a3bdaf8df78ff1a938305e4e6057059",
           "src/vtab/series.rs": "30437f4f74872392b164e0b9a1faa32b2ea2985bf3d9e339d7a1c575af3e5ace",
-          "src/vtab/vtablog.rs": "fdad45a833a50ab48d32739f035b96106b4d435c9ef390be40f364672ae1cecb",
+          "src/vtab/vtablog.rs": "67ecc16bab71deffc6dd12e2732ad4b3fdb3fd788d12f2a053f8f0ea11d17073",
           "src/wal.rs": "166b2413d4a58a67efe82645057043ff7135a6aafc3d1050542ca4f98377357e",
           "test.csv": "3f5649d7b9f80468999b80d4d0e747c6f4f1bba80ade792689eeb4359dc1834a",
           "tests/auto_ext.rs": "d4d489c5aa40cc4fbe4191cd2d069a886f5d252036f2055197fa6adec57966a4",
           "tests/config_log.rs": "3482b49890d6830b3ac18cf165f35f9dd5daea94bceff509b4b4255931514978",
-          "tests/deny_single_threaded_sqlite_config.rs": "b23907ab61a7b0ea30f587d27ef7a159067f5ff301f194148fc8f809d7660b23",
+          "tests/deny_single_threaded_sqlite_config.rs": "7f1a01406cced5555033d957094b0c6470c073585312c1c4d227dd436e8a2576",
+          "tests/hook_no_mem.rs": "51cee21e33c0f3d7dca1c66237968531d776e0ebc58dac14e3e6f77b809b3121",
           "tests/vtab.rs": "c6d5b79dbca2b22bc2cc5cac3c546e96b3f278acb291ab223f2278d2ed7eb2b3",
           "types.md": "1148449c128628d407152854cf589e8f8c63fd8682e0e2e84f026811d2dbc690"
         },
         "name": "rusqlite",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "0.41.1"
+        "version": "0.43.0"
       },
       {
         "checksum": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
@@ -3876,30 +3881,31 @@
         "version": "2.0.1"
       },
       {
-        "checksum": "d0d5d4b1981b8bbbb7aed204cae5726d683d5d6ac7e74ec54122ea28f315e7c8",
+        "checksum": "3244542535d5de959d90ec55d1b5ff0fd2bb7b1310223907d5f11932847f7b59",
         "features": {
           "aarch64-apple-darwin": [],
           "x86_64-apple-darwin": []
         },
         "inputs": {
-          ".cargo_vcs_info.json": "ba665cdcd46cd59957f596ad575d2497ae1a2c7e215dc3bcc38377f0cf5dad8d",
-          "Cargo.lock": "0fd93fd1cba77b56fbf5b3a0c0279ca647283cb3fd985568cb075b3789245857",
-          "Cargo.toml": "01b4c86d677ccf162137a6ce62ff6f243fdb6996322ad1863da1481d514a2cbb",
-          "Cargo.toml.orig": "fa30b5eb7f1ad5d46729c1b82ac743c5269ff21e29909fe5eee5ccbfe541f9d2",
+          ".cargo_vcs_info.json": "955bd7a5fe7485aee499fd300fa26c1c0af47bc9d169af47c5d5d95ce4706ea3",
+          ".gitignore": "6ed50d7bde26437b81cc4cbb084a5f308ca9f0b5d6a10ea027e0b1bb71592094",
+          "Cargo.lock": "0c48c935d1c974b95fd23337bd2af4b35c88c244860cbd8ce6792ba897af1666",
+          "Cargo.toml": "3cf40c83931839b5d0566300b8084043064436f84c5fcfd142e13a4138bc2e7a",
+          "Cargo.toml.orig": "93459c7f00ab2397c7f119053078fac79e1adf57d0686c4ae83db189b0ef8daa",
           "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "LICENSE-MIT": "0b28172679e0009b655da42797c03fd163a3379d5cfa67ba1f1655e974a2a1a9",
-          "README.md": "a01127c37308457e8d396b176fb790846be0978c173be3f13260b62efcef011b",
-          "src/arbitrary.rs": "8ffbd752c5ec31089bfb91f702a496a3e26d0079d8f34ffb617dd75fc21503b4",
-          "src/lib.rs": "c95ee991a165908b650df4a0e6473d357294137baa4bfff415e58f9bfacccec0",
-          "src/specialization.rs": "46433586203399251cba496d67b88d34e1be3c2b591986b77463513da1c66471",
-          "src/tests.rs": "e453d846bc54bc5204a50b83bdc53f2a844879ff3f59b8414ed38afe91ac477d"
+          "README.md": "0f0a485d0d6a9afb48e3f28d0e708745f88760174202fdd9a81f72d26ff39f49",
+          "src/arbitrary.rs": "d7b083121ce24d88dc31a2a962391a9126923c250c2b516523b66a72b17e223e",
+          "src/lib.rs": "de9cfac60660ad17998f64e2d4ee279f639c906cf570c77b2ab47caeb56c9649",
+          "src/specialization.rs": "618e0ef3d23055feb2c43ad78d594df00fde616805b8896d360543e8c102d45a",
+          "src/tests.rs": "0322980a98f2469577ed622526559f1319df5d3361be8449584165feb45d7e23"
         },
         "name": "smallvec",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "1.16.4"
+        "version": "1.16.6"
       },
       {
-        "checksum": "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b",
+        "checksum": "4ae9ccbea3a7b0b09443036490c8f34a8b1b760fd345e5c0dae0aac718faea79",
         "features": {
           "aarch64-apple-darwin": [
             "clone-impls",
@@ -3927,10 +3933,10 @@
           ]
         },
         "inputs": {
-          ".cargo_vcs_info.json": "cee294e3a4f8d4422a82e49ee3224414ea309f9c2e717533d97f0c960f3b8eab",
-          "Cargo.lock": "5f4c517504cd387d67423ed245a18bba376df929cdbaf444e310251c731ffc5b",
-          "Cargo.toml": "b6f7f6069d92142d3e294f84855a68049bebc5b886c557ed4ae980ddbc866e1c",
-          "Cargo.toml.orig": "d80272529ba81ff84369a6dd390a1eb3de56e01cdc7633e81a7cd7f9512d41cc",
+          ".cargo_vcs_info.json": "e26a647ede4f4db469664a5ea3a93589c8a854abae51a070a543f6328236236a",
+          "Cargo.lock": "a520598f761ea734d76b2f256a5a44d5116018c3b5ea86ee6aee8f6c00e83b77",
+          "Cargo.toml": "483292e3ca48fc6fc04c1ff03ef5fcafdb39417cee3df0727122b52129b1dc6b",
+          "Cargo.toml.orig": "673d452a27444d399783f9a6b4a3349381ece66ceaf19624bb43f139d5a01bd1",
           "LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
           "LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
           "README.md": "a00f270c7f468863f28b9984547872efb57c7db1b9beb6e685852dc24de6846e",
@@ -3951,7 +3957,7 @@
           "src/expr.rs": "9196c144305eda8bdd63e117c8126aef2170af1dae08a951e4af70399bed8f5a",
           "src/ext.rs": "8bc0d0ffab88c73d2305c9f588e6b5285501de8869308162f91019c83bc5bdf1",
           "src/file.rs": "4513d0f1f4a4d78ba94c0895e97aadc0c2ebcf6f5da36abf762e77e813bc9aea",
-          "src/fixup.rs": "7647cde30efdce96b1488ae805788c168d4499b464b7d421abc17ea8ffde66f2",
+          "src/fixup.rs": "b04ad7fcc5a2fa21f5e4058b358354ba4eb38ca013f30a06876955646dd59555",
           "src/gen/clone.rs": "342704f87c06f11b4b6b60689df5f55e7a9a67d656b9286cc23a364f485c135f",
           "src/gen/debug.rs": "29782ea05d86b95e98bb664d6688c413c871dc78f5dc9ee81f584aaa63e85558",
           "src/gen/eq.rs": "15f2b5070ea8fccf07dbff6bf2fdc027c6d913599b5c1a8e8a5bc9e39e601133",
@@ -3964,7 +3970,7 @@
           "src/group.rs": "61e067094aa930b6550dc3717a5aaeef7dabfdcf1a177f83fb636598fa7e4e72",
           "src/ident.rs": "a17e32b0d997649c4c986d1c9eef24be5331cd9ab478604932297b55f785487a",
           "src/item.rs": "11529dc48c5045d3b0f7947d05ea5aadf0f389f4a8e0b25222333042721ab10f",
-          "src/lib.rs": "bbd84571900844f1c73bf784ead1adb2c1ac07163e2038920bae9c0bc132e9e5",
+          "src/lib.rs": "18e97adc1098c1edac0c9aab253e34844da6699af095ffebb5b949fe0000ed45",
           "src/lifetime.rs": "2f3a240a4a0d9536dd1e3255d5ae0d64efcc46f295cf565a09e8ac33cd3d3487",
           "src/lit.rs": "b474ef6e974844ba972c0fcedf3e075f03e822faf4e55a9b27f648efe7121098",
           "src/lookahead.rs": "ea51bbf9a23d68238f8324a51675f5815fb3e5fc08c6bab93bc2648d3342c38f",
@@ -3992,7 +3998,7 @@
           "src/ty.rs": "63bbf2272575d40ba632b54ca51857f43410bc22c20ff3ecedee3d3f52dd84e5",
           "src/verbatim.rs": "503055ba92ebb97da71a8a7cae1e6606969aadfb965b0d6c7e56693f9ef66b0a",
           "src/whitespace.rs": "9cdcbfe9045b259046329a795bc1105ab5a871471a6d3f7318d275ee53f7a825",
-          "tests/common/eq.rs": "bb7e40bf43a7628e305fc1afaa4c0b540e7bb2f25f4a3b9d3ac4c317bbb58a29",
+          "tests/common/eq.rs": "b0e38007ccf43fd753c8337a739b707bb60e25fbbaa206908245bcd36f1d38d4",
           "tests/common/mod.rs": "b752aa8f1faf8c6abf1286a12fb50b6c257ec1889d81bcdb3dc3257134695a89",
           "tests/common/parse.rs": "b1685e9e0f0569f48d66ddd92d787a12933a1d2f95e7c9ae974a3648763f989b",
           "tests/common/visit.rs": "a260ecd2ce7853cd3644e19aba08e8d358a656fd3fb0f1287cea40c59c9e62c9",
@@ -4007,7 +4013,7 @@
           "tests/snapshot/mod.rs": "4a101272c5abe6ca9f3501e0cacacee9a0ccf7ca773348a239e5b046d0316a7e",
           "tests/test_attribute.rs": "8a4429b7cfe2360bb73beae54a62ae3255ebbd5181467a8608d6f858c2711728",
           "tests/test_derive_input.rs": "ac6fff053bded4ca30f88343cbf984a319119b58805f56058bd6ad61a1f60972",
-          "tests/test_expr.rs": "0356f48052aaa837147fcab33185703e24c0bac5f4d007234f3e86c7cf5a3faa",
+          "tests/test_expr.rs": "b19ff085d05bfc6eaef7bfb2066bfa825b6ca43543ac260589a33b0ab0d9d84c",
           "tests/test_generics.rs": "2bd20cbaab8ff268e6e283ae9564f064f352deab7d3d4beafb7f41baa2b862cf",
           "tests/test_grouping.rs": "fe3de6e8824f0722ab6450c6dfc374f6e0f8fe75c87c4dd56b2cb00a2197ed58",
           "tests/test_ident.rs": "d5850e817720e774cd397a46dbc5298c57933823c18e20805e84503fc9387e8f",
@@ -4034,7 +4040,7 @@
         },
         "name": "syn",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "3.0.9"
+        "version": "3.0.10"
       },
       {
         "checksum": "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd",
@@ -4162,7 +4168,7 @@
         "version": "1.0.27"
       },
       {
-        "checksum": "4a0e2d11620c50695fe12bbbfde96b3477fe606e7284c22d505c12ce51214514",
+        "checksum": "3c14b15dffa2f4bd712103e857140aa04a4f2ff6e955c77d7eb8e53ee02a3b64",
         "features": {
           "aarch64-apple-darwin": [
             "default",
@@ -4178,40 +4184,40 @@
           ]
         },
         "inputs": {
-          ".cargo_vcs_info.json": "5379d8840cc593ba0e99753f700a67ead34898c24e78fe9b83d9933f404955f2",
-          "Cargo.lock": "cecf07a8c26619686a766e88863565187f5690aa8b9d95f5b8f13a7f6ed13a0e",
-          "Cargo.toml": "01614e314e5191de7e535dfe17074116a1ad8f2cb8145de84417a6538c57bf99",
-          "Cargo.toml.orig": "38410d2bdc650b5a33022a67f20c823bdfb761e68eddb9c7e808059a969b8dab",
+          ".cargo_vcs_info.json": "c659f53654428825c05053b12e7876db30b93b6b765dee0fe6e78d32dbb85294",
+          "Cargo.lock": "ff47ca0f57f5ce7b0b32fd4d58442b9319d09da17de3d952d100e136b6ad1f17",
+          "Cargo.toml": "1022f03fbc42672b3fc4c3d47a3a6c2b10f76c767cb65bf36adeb506778ad7c4",
+          "Cargo.toml.orig": "2b15feaca390dd9b9ef632fb4b555cd3d33126e742625827bcce30563cd6e447",
           "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "LICENSE-MIT": "436bc5a105d8e57dcd8778730f3754f7bf39c14d2f530e4cde4bd2d17a83ec3d",
-          "README.md": "23dd1ca3a91e0c8a6f243bde063bdaf0bb314153f33d1dc24e3a3d453329ebe3",
+          "README.md": "827744546b4dcca223ec04a723f969b17262fe0b407bfdad2775ebb57a8641ba",
           "src/builder.rs": "d332dbf9380bd6275f8c416758a8971db875ce2a661440c8e476cc6f827736c9",
-          "src/error.rs": "bb2156d5924cbd8957ffeed4506edcc66b4a325e22f1e0456ef9bc45facfb0f2",
+          "src/error.rs": "a21d1dfe5244b4449051d845c7b8d5d2fa109bd720978c84a369b02b2e57d337",
           "src/external.rs": "a0640bdb98de1c24fcc9851a438a5abe6f7e3acb195885c817a64fac25521b9d",
           "src/external/arbitrary_support.rs": "a257653e0defcd271b1b74386c2f57a398ef54c1bacf450660a2847bf7956514",
           "src/external/borsh_support.rs": "b49d82a59653445ba26db46a1515294b1ab480c0671dbe5499dfd1fb02588b3b",
-          "src/external/serde_support.rs": "f5bf58b1ff7d5ed6a5b067c218b8d9e69d05e559a27de93b2dac4f7f1b25ca4b",
+          "src/external/serde_support.rs": "7fd6dc6d6946511275ae8e2a811c5b7f5793b0da8ec25f577b20b2757a4d4a0a",
           "src/external/slog_support.rs": "8ba03d4b6c8b37dd8e3d08f47b254ca68ffa6f4a29a2c98dd277dbafdcb810dc",
           "src/fmt.rs": "59160088a7ef7df7fd6d622d888db2a73d5a93940121ef14daf957f0d2cef68f",
-          "src/lib.rs": "d865dc56af193a410f6cebaed38da838af1fb818c896f24baa05b3861db58b8a",
+          "src/lib.rs": "2d5d551a4ede6dea9c08ea6b58df316eb471e95b6b49dade368f917d11c57886",
           "src/macros.rs": "76b6c6da92909ba9da6d3ed41c818943825939c9ed6bca7be81acec737abfcb5",
           "src/md5.rs": "316d65b760ffa58beb6aa678be24359eb21a744e9e143bc99c11fe1907659245",
           "src/non_nil.rs": "ac162470b38ea2ef494ad016dd02d096b0f7306f259b669588db26d826b9f3bd",
-          "src/parser.rs": "e38573547b03d88764270ee5bd5347af380c4a331d7eb9175dcd0037a51af922",
-          "src/rng.rs": "0025abde1ac4171b96fff8d137bb4cdc56b41387d426ab23797c30c97eb10444",
+          "src/parser.rs": "7038bdce9b59c58dd4f3838fae6d9daffdff2d4ea1e2ddfe2832085a59f0b9fe",
+          "src/rng.rs": "e44e1e64b108f8eb6059b676d8109b476fae060aa14e5c6b613341fa8d0e6fc5",
           "src/sha1.rs": "e1a9657e11f1ed1ede33c0655f9c2641059b7c24f17be4ac425c930cc216e019",
-          "src/timestamp.rs": "ba55182bef43450ed69dfb18a94fcee70eb7a0e9c0fcafbfeb47407780739350",
-          "src/v1.rs": "c05ea3e5bb8b9b27c80794698f97e0d7b7874056b54fe39e97565f766edcf638",
-          "src/v3.rs": "dd8369a29a29b47bcc74eb42a576f1f563adcd8b4f843a03c86f708481d96bb2",
-          "src/v4.rs": "3d553f0f14f26a1915a62b1aaea1d011def5631d77a6ef8da1a87983b5b98cd5",
-          "src/v5.rs": "27c143debd15b98851e081ffac981e7a97e8629e79bc89f252dba97f9fb06213",
-          "src/v6.rs": "310e1c2d8a1cfe87a983017e2a897e17b055612372597ee5711ad4773a1c4ef0",
-          "src/v7.rs": "271df1c32420b68d3fb82287f64fbe6ffba9824605bec42433b96df6501246fd",
-          "src/v8.rs": "5dca8480a69af6e7c40577424cc8f948302b5d75ba8f08e92cf21070cddc81e6"
+          "src/timestamp.rs": "b474138c17568b62cd1333027ba8b1812901c8e6e50969a756532229355fb63d",
+          "src/v1.rs": "4c21b6e47c33b1cff42a013f454dee43378812ea56642c7b2b937d68355049c5",
+          "src/v3.rs": "73d44302cad9159bdcf4d9c4e7a9d2b570ed6661e2cd128695af24b119bca70c",
+          "src/v4.rs": "3ba20a0b7e04c59fc12027fcea2cd3663fef8a1fe0ca4ecfaa8c31c1cad3ac9d",
+          "src/v5.rs": "fa035bda9150983cd5a4dc923089f7827bd348db0e35d73c905c59720138a4c6",
+          "src/v6.rs": "3a6c95dd8fac2db4fdbb1208aba70bd04353d4cbf1da4747c5682f5954f00474",
+          "src/v7.rs": "edcacabe29558ea312d1643632a5b71fb2b6530c15cbc128b66dbb5eefd6c667",
+          "src/v8.rs": "344dd4219b8400e9341c74e8dd5421ad509a05b61e72d8f78326744e544de39c"
         },
         "name": "uuid",
         "source": "registry+https://github.com/rust-lang/crates.io-index",
-        "version": "1.29.0"
+        "version": "1.29.3"
       },
       {
         "checksum": "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426",
@@ -5096,11 +5102,11 @@
       "x86_64-apple-darwin"
     ],
     "workspaceInputs": {
-      "Cargo.lock": "976218cc28ea7bf8062be337a335451e07a4ed6a0ec5509530537d12bde35679",
-      "Cargo.toml": "6335d64938d13b58faf8902954144859424f61d5191eeba3134e5c54bf01888f",
+      "Cargo.lock": "c54574eddbd51ee4a861ed4e8a9d91e657256a14bf055182f34dec824167a4b4",
+      "Cargo.toml": "e3cc5fa1b013ca15b9a1504ba4e2a0b05ee2fad33efbdef4f9576bedbe92d9e6",
       "crates/core/Cargo.toml": "e304db715b3ae8f6c933115e46d3664d62f965afd1be8025e95f77caa39e3849",
       "crates/ffi/Cargo.toml": "a2cb35f32e4f79f6410c069814d9630301934941404450c97353c2fb53effbcb",
-      "rust-toolchain.toml": "d13306be0ecda81ce779baa290ffb417380d525928477f16200884b5169cca33"
+      "rust-toolchain.toml": "6b1cf8341d9a08d76c6deb1e9df90a0b208d0ef0d00ee05e0173e9cd4f0f425d"
     }
   },
   "deploymentTarget": "26.0",
@@ -5121,34 +5127,34 @@
     "_configuration_storage_store_request"
   ],
   "inputs": {
-    "Cargo.lock": "976218cc28ea7bf8062be337a335451e07a4ed6a0ec5509530537d12bde35679",
-    "Cargo.toml": "6335d64938d13b58faf8902954144859424f61d5191eeba3134e5c54bf01888f",
+    "Cargo.lock": "c54574eddbd51ee4a861ed4e8a9d91e657256a14bf055182f34dec824167a4b4",
+    "Cargo.toml": "e3cc5fa1b013ca15b9a1504ba4e2a0b05ee2fad33efbdef4f9576bedbe92d9e6",
     "LICENSE": "e18e92825e5b064c568d67d636729c2d8669b61ea9d68b0fa5283b713d70aab1",
     "ThirdParty/Rust/COPYRIGHT": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af",
-    "ThirdParty/Rust/COPYRIGHT-library.html": "5647be074c8edf7339fd863055923a8fc80bc5610a8d4661ec3b767b9d392c27",
+    "ThirdParty/Rust/COPYRIGHT-library.html": "626556344c12679d7cab2c1aa2ce80de01937b62c2c88c62f0650a469be18799",
     "ThirdParty/Rust/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
     "ThirdParty/Rust/LICENSE-MIT": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1",
-    "ThirdParty/Rust/provenance.json": "123e52d01e6685dedbffe4062cfc4db869d9cfac10470b4a1b930c442da2e654",
+    "ThirdParty/Rust/provenance.json": "eed9af2d1c0de869ffb6117537a259735ed635f9c46119d578df4029289cd497",
     "ThirdParty/base64-0.23.1/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
     "ThirdParty/base64-0.23.1/LICENSE-MIT": "ab499c75a0f0da8e0fe83bf9ba3a27e5c39705310f07107c6c66b69958d2401c",
     "ThirdParty/bitflags-2.13.2/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
     "ThirdParty/bitflags-2.13.2/LICENSE-MIT": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
     "ThirdParty/block-buffer-0.12.1/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
     "ThirdParty/block-buffer-0.12.1/LICENSE-MIT": "98181e7249d0c01737645ec982499ce99a0f07eb8f7d625b8840d799d10dbc01",
-    "ThirdParty/cc-1.10.0/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-    "ThirdParty/cc-1.10.0/LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+    "ThirdParty/cc-1.11.3/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "ThirdParty/cc-1.11.3/LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
     "ThirdParty/cfg-if-1.0.5/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
     "ThirdParty/cfg-if-1.0.5/LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
-    "ThirdParty/const-oid-0.10.2/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
-    "ThirdParty/const-oid-0.10.2/LICENSE-MIT": "73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa",
+    "ThirdParty/const-oid-0.10.3/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
+    "ThirdParty/const-oid-0.10.3/LICENSE-MIT": "73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa",
     "ThirdParty/cpufeatures-0.3.1/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
     "ThirdParty/cpufeatures-0.3.1/LICENSE-MIT": "73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa",
     "ThirdParty/crypto-common-0.2.2/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
     "ThirdParty/crypto-common-0.2.2/LICENSE-MIT": "d2e7ec5355c96eeade56b09187ceb48a6a30299da3ce7531a66d3d11405ab963",
     "ThirdParty/digest-0.11.3/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
     "ThirdParty/digest-0.11.3/LICENSE-MIT": "af59cea35d7f5e2777a713b8d155d65efa2c339eb43f3c14e868c6ac8506edad",
-    "ThirdParty/errno-0.3.14/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-    "ThirdParty/errno-0.3.14/LICENSE-MIT": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
+    "ThirdParty/errno-0.3.15/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "ThirdParty/errno-0.3.15/LICENSE-MIT": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
     "ThirdParty/fallible-iterator-0.3.0/LICENSE-APACHE": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
     "ThirdParty/fallible-iterator-0.3.0/LICENSE-MIT": "0816e154b159ba255c563f7c8c7df5bbb8cc5fc96f5ab8cf9f4743b4f41fe7eb",
     "ThirdParty/fallible-streaming-iterator-0.1.9/LICENSE-APACHE": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
@@ -5160,18 +5166,18 @@
     "ThirdParty/foldhash-0.2.0/LICENSE": "b1181a40b2a7b25cf66fd01481713bc1005df082c53ef73e851e55071b102744",
     "ThirdParty/getrandom-0.4.3/LICENSE-APACHE": "aaff376532ea30a0cd5330b9502ad4a4c8bf769c539c87ffe78819d188a18ebf",
     "ThirdParty/getrandom-0.4.3/LICENSE-MIT": "523a42c25d245dde9c015f882cec7f4555aad883382a6cf19b4b7d9b2cd5419b",
-    "ThirdParty/hashbrown-0.17.1/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-    "ThirdParty/hashbrown-0.17.1/LICENSE-MIT": "ff8f68cb076caf8cefe7a6430d4ac086ce6af2ca8ce2c4e5a2004d4552ef52a2",
+    "ThirdParty/hashbrown-0.17.2/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "ThirdParty/hashbrown-0.17.2/LICENSE-MIT": "ff8f68cb076caf8cefe7a6430d4ac086ce6af2ca8ce2c4e5a2004d4552ef52a2",
     "ThirdParty/hashlink-0.12.2/LICENSE-APACHE": "c144680885b29e4719e2a51f0aab5439a1e02d980692b5aaf086cae12727f28b",
     "ThirdParty/hashlink-0.12.2/LICENSE-MIT": "e915669a595b11a200873df8286561881b0e04932f6412a585db6297ba0bc97c",
     "ThirdParty/hybrid-array-0.4.15/LICENSE-APACHE": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
     "ThirdParty/hybrid-array-0.4.15/LICENSE-MIT": "70c9d40f1f9545c3f133b8a67206e89da850f6468eed072281bb3701514114a9",
-    "ThirdParty/itoa-1.0.18/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
-    "ThirdParty/itoa-1.0.18/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+    "ThirdParty/itoa-1.0.19/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+    "ThirdParty/itoa-1.0.19/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
     "ThirdParty/libc-0.2.191/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
     "ThirdParty/libc-0.2.191/LICENSE-MIT": "123a331b5dbf04c30097fa43b8f858bc85df671fe776de498d01f3d6b7c1f69e",
-    "ThirdParty/libsqlite3-sys-0.39.1/LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
-    "ThirdParty/libsqlite3-sys-0.39.1/sqlite3/NOTICE.txt": "85806d613cfda5901f848b3b5b4b04396c8c64e89c97c0af3706c42b0c44bb47",
+    "ThirdParty/libsqlite3-sys-0.40.0/LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
+    "ThirdParty/libsqlite3-sys-0.40.0/sqlite3/NOTICE.txt": "85806d613cfda5901f848b3b5b4b04396c8c64e89c97c0af3706c42b0c44bb47",
     "ThirdParty/memchr-2.8.3/COPYING": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
     "ThirdParty/memchr-2.8.3/LICENSE-MIT": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
     "ThirdParty/once_cell-1.21.4/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
@@ -5182,8 +5188,8 @@
     "ThirdParty/proc-macro2-1.0.107/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
     "ThirdParty/quote-1.0.47/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
     "ThirdParty/quote-1.0.47/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
-    "ThirdParty/registry-notices.json": "750421cc973e041351b5dc93557e784ae5828b28089bf18cd01a501d6b1bd581",
-    "ThirdParty/rusqlite-0.41.1/LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
+    "ThirdParty/registry-notices.json": "942a39db22b8dc420cf4fbd65593aa9f0903181851d80441823031e9ce691ce1",
+    "ThirdParty/rusqlite-0.43.0/LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
     "ThirdParty/rustix-1.1.6/COPYRIGHT": "377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9",
     "ThirdParty/rustix-1.1.6/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
     "ThirdParty/rustix-1.1.6/LICENSE-Apache-2.0_WITH_LLVM-exception": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
@@ -5200,10 +5206,10 @@
     "ThirdParty/sha2-0.11.1/LICENSE-MIT": "831e0f43ad0bf014c1c4fec5767aae470434c1d66d6e671be2d823e729063e25",
     "ThirdParty/shlex-2.0.1/LICENSE-APACHE": "553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583",
     "ThirdParty/shlex-2.0.1/LICENSE-MIT": "4455bf75a91154108304cb283e0fea9948c14f13e20d60887cf2552449dea3b1",
-    "ThirdParty/smallvec-1.16.4/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-    "ThirdParty/smallvec-1.16.4/LICENSE-MIT": "0b28172679e0009b655da42797c03fd163a3379d5cfa67ba1f1655e974a2a1a9",
-    "ThirdParty/syn-3.0.9/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
-    "ThirdParty/syn-3.0.9/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+    "ThirdParty/smallvec-1.16.6/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "ThirdParty/smallvec-1.16.6/LICENSE-MIT": "0b28172679e0009b655da42797c03fd163a3379d5cfa67ba1f1655e974a2a1a9",
+    "ThirdParty/syn-3.0.10/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+    "ThirdParty/syn-3.0.10/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
     "ThirdParty/tempfile-3.27.0/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
     "ThirdParty/tempfile-3.27.0/LICENSE-MIT": "8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36",
     "ThirdParty/typenum-1.20.1/LICENSE": "db11fec9946737df39ca3898d9cd8c10ec6f6c3a884a6802b0ad0b81b4e8f23a",
@@ -5212,8 +5218,8 @@
     "ThirdParty/unicode-ident-1.0.27/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
     "ThirdParty/unicode-ident-1.0.27/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
     "ThirdParty/unicode-ident-1.0.27/LICENSE-UNICODE": "f7db81051789b729fea528a63ec4c938fdcb93d9d61d97dc8cc2e9df6d47f2a1",
-    "ThirdParty/uuid-1.29.0/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-    "ThirdParty/uuid-1.29.0/LICENSE-MIT": "436bc5a105d8e57dcd8778730f3754f7bf39c14d2f530e4cde4bd2d17a83ec3d",
+    "ThirdParty/uuid-1.29.3/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "ThirdParty/uuid-1.29.3/LICENSE-MIT": "436bc5a105d8e57dcd8778730f3754f7bf39c14d2f530e4cde4bd2d17a83ec3d",
     "ThirdParty/vcpkg-0.2.15/LICENSE-APACHE": "60c93a31f490375aadf64098b75f10715010379541021e00261045d7800611d3",
     "ThirdParty/vcpkg-0.2.15/LICENSE-MIT": "016d20f335060a70e79d9fcf8dfaa6201114d65d592211f4bdfb8ae9ca2bc1dc",
     "ThirdParty/windows-link-0.2.1/license-apache-2.0": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
@@ -5236,7 +5242,7 @@
     "crates/ffi/src/recovery_copy.rs": "45a27bf04f725f924c4caaaec2c2ef7ec7e2d02eafcd7aca4266a5ddb838025e",
     "crates/ffi/src/save_queue.rs": "5fa40bcf728937de371190923fc5329b22f1f8ca03aec10a91d96e357be92fa8",
     "native.toml": "9559ab22640560159d4e3460175edaa892147a7f95b821b08e89459f4be2f78c",
-    "rust-toolchain.toml": "d13306be0ecda81ce779baa290ffb417380d525928477f16200884b5169cca33"
+    "rust-toolchain.toml": "6b1cf8341d9a08d76c6deb1e9df90a0b208d0ef0d00ee05e0173e9cd4f0f425d"
   },
   "linkage": "dynamic-framework",
   "outputs": {
@@ -5245,12 +5251,12 @@
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Headers": "036ae9446c4f0c59046671d1d96e2de4f606b340d8a5c1927b2d51bc293e0365",
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Modules": "278b6b2d8f8418e2e4877a67a109b6e3865174e4fa7405870a643e95cbc2f783",
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Resources": "c213ee8e9c523538d862da3e5716b64bf090f6a1be08914954ae33cfbda7dbb2",
-    "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/CConfigurationStorage": "09ed7907069312a6b0e1e43fbd02645d10a7534910e058cbdae67fe239a2a0bf",
+    "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/CConfigurationStorage": "adf287024d7f47a82acce991b17db7c623628ccfe575c667c24eb6384414cb30",
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/Headers/configuration_storage.h": "6e40d8361248a27428c8fd075b5c38e4a817344f6e9d19bd718c19c10606f115",
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/Modules/module.modulemap": "4a5b636c08e518084a7cc47ccaca3acbd0847ce3642cb72049f94d704e39df0f",
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/Resources/Info.plist": "2ee94042c7811e9b91b589f38561b9d2ff43e3a88bfa69b15b52f6d2efffef1e",
-    "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/Resources/ThirdPartyNotices.txt": "3373f7a483cd1d439c4f51f886d27f4bac3710d7d345d7715b57e0bde92bcc40",
-    "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/_CodeSignature/CodeResources": "31b37909e293ff7a5d2c34d62e529dc199698c034a231eab62280b9393a7e038",
+    "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/Resources/ThirdPartyNotices.txt": "923e35bf730ea9e98767b6cbdd817981bac506b4f0a9cb64b14ab0e7ba1b42bb",
+    "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/A/_CodeSignature/CodeResources": "be29bb58c150f3d1b68dd183a74c11745ebc76deacdc8d7a0c054572035e47f6",
     "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework/Versions/Current": "ee26006c07174064a7bed9b283a8b016d74a295e05c4e23a1846538d69b23c5f"
   },
   "productionSources": [

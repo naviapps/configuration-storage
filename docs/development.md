@@ -7,7 +7,7 @@ For SDK installation and explicit writes, see the [overview](../README.md).
 
 Use Git, mise and a full Xcode installation providing Swift 6.3 or newer, SwiftPM,
 and Apple build tools on macOS 26 or later. `mise.toml` selects developer Python
-and static tools. `global.json` pins .NET. `rust-toolchain.toml` selects Rust 1.99.1,
+and static tools. `global.json` pins .NET. `rust-toolchain.toml` selects Rust 1.100.0,
 rustfmt and Clippy. Review those manifests, then prepare the pinned tools before running
 checks:
 
@@ -186,7 +186,7 @@ the XCFramework.
 
 [native.toml](../native.toml) declares the framework inputs, symbol prefix and
 minimum macOS version. The explicit `make native` target requires pinned Rust
-1.99.1, both Darwin
+1.100.0, both Darwin
 standard-library targets and locked offline
 dependencies. It uses `target/native` and builds `libconfiguration_storage.dylib`
 into a universal arm64/x86_64 framework with minimum macOS 26.0. Its receipt is
@@ -201,10 +201,10 @@ Retain the production and build notice union for arm64/x86_64 macOS and Windows
 x64, including Windows package notices during a macOS rebuild. The prior Windows
 ARM64 graph and Windows x64 graph resolve the same locked production and build
 dependencies, so the retained Windows notices cover the x64 package. The
-`rusqlite 0.41.1` and `libsqlite3-sys 0.39.1` notices include the bundled SQLite
+`rusqlite 0.43.0` and `libsqlite3-sys 0.40.0` notices include the bundled SQLite
 disclaimer from `libsqlite3-sys/sqlite3/sqlite3.h` as well as the crate's MIT license.
 
-`ThirdParty/Rust` retains Rust 1.99.1's `LICENSE-APACHE`, `LICENSE-MIT`, `COPYRIGHT`
+`ThirdParty/Rust` retains Rust 1.100.0's `LICENSE-APACHE`, `LICENSE-MIT`, `COPYRIGHT`
 and `COPYRIGHT-library.html` with verified source/hash provenance. Builds use those
 local files. Framework resources preserve all notices in `Resources/ThirdPartyNotices.txt`;
 Windows/NuGet packages use the original local notice files.
