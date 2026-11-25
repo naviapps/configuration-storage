@@ -128,9 +128,9 @@ Windows or both.
 
 ## Maintainer distribution checks
 
-[sdk-checks.toml](../sdk-checks.toml) describes the SDK's fixtures and
-documentation checks. [sdk-distribution.toml](../sdk-distribution.toml) lists the
-release checks for each platform. The [public SDK Tooling workflow](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
+In [sdk-tooling.toml](../sdk-tooling.toml), `[checks]` describes the SDK's fixtures
+and documentation checks, and `[distribution]` lists the release checks for each
+platform. The [public SDK Tooling workflow](https://github.com/naviapps/sdk-tooling/actions/workflows/check-sdk-distribution.yml)
 verifies the native receipts and standalone Swift, Rust and C consumers. It
 packs the verified macOS and Windows native libraries in one NuGet package and
 uses the same package bytes for each independent .NET consumer. Dispatch it
@@ -184,11 +184,10 @@ Rust FFI declarations before building the framework. Git ignores those local
 outputs. Source checks compare the generated files with the copies bundled in
 the XCFramework.
 
-[native.toml](../native.toml) declares the framework inputs, symbol prefix and
-minimum macOS version. The explicit `make native` target requires pinned Rust
-1.100.0, both Darwin
-standard-library targets and locked offline
-dependencies. It uses `target/native` and builds `libconfiguration_storage.dylib`
+The `[native]` section of [sdk-tooling.toml](../sdk-tooling.toml) declares the
+framework inputs, symbol prefix and minimum macOS version. The `make native`
+target requires pinned Rust 1.100.0, both Darwin standard-library targets and
+locked offline dependencies. It uses `target/native` and builds `libconfiguration_storage.dylib`
 into a universal arm64/x86_64 framework with minimum macOS 26.0. Its receipt is
 `Artifacts/native-build.json`; verification never refreshes it.
 

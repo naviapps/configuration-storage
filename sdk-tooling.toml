@@ -1,0 +1,43 @@
+[[native.artifacts]]
+id = "sdk"
+symbol_prefix = "configuration_storage_"
+minimum_macos = "26.0"
+
+[checks.swift]
+executable = "ConfigurationStorageConsumer"
+inputs = ["Package.swift", "Sources", "Tests", "Artifacts", "ThirdParty", "LICENSE"]
+
+[checks.rust_c]
+git_url = "https://github.com/naviapps/configuration-storage.git"
+rust_packages = ["configuration-storage"]
+
+[checks.rust_c.c]
+framework = "Artifacts/CConfigurationStorage.xcframework/macos-arm64_x86_64/CConfigurationStorage.framework"
+header = "configuration_storage.h"
+
+[checks.windows_bindings]
+packages = ["configuration-storage-ffi"]
+projects = ["bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj"]
+arguments = ["--native"]
+
+[checks.nuget]
+package_id = "NaviApps.ConfigurationStorage"
+fixtures = ["fixtures/consumers/dotnet/Program.cs"]
+windows_x64 = true
+
+[distribution.macos]
+commands = [
+  ["xcrun", "swift", "--version"],
+  ["cargo", "fetch", "--locked"],
+  ["make", "test-distribution-tools", "test-native-bindings", "test-installed-consumers"],
+]
+
+[distribution.windows]
+commands = [
+  ["rustup", "install", "--no-self-update"],
+  ["sdk-tooling", "python", "-m", "unittest", "discover", "-s", "distribution/tests"],
+  ["sdk-tooling", "windows", "-m", "distribution.verify_windows", "--native-only"],
+]
+
+[distribution.nuget]
+pack = "distribution/pack_nuget.py"

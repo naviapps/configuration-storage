@@ -32,7 +32,7 @@ def pack(runtimes, *, environment=None):
         nuget_config=NUGET_CONFIG,
         runtimes=runtimes,
         environment=environment,
-        input_files=[Path(__file__), ROOT / "native.toml", ROOT / "mise.toml"],
+        input_files=[Path(__file__), ROOT / "mise.toml"],
     )
 
 
