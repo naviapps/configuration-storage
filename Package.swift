@@ -15,6 +15,8 @@ let package = Package(
     .target(name: "ConfigurationStorageTestSupport"),
     .testTarget(
       name: "ConfigurationStorageTests",
-      dependencies: ["ConfigurationStorage", "ConfigurationStorageTestSupport"]),
+      dependencies: [
+        "CConfigurationStorage", "ConfigurationStorage", "ConfigurationStorageTestSupport",
+      ]),
   ]
 )
