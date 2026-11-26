@@ -109,6 +109,17 @@ class SDKToolPolicyTests(unittest.TestCase):
         self.assertIn("licenses/Rust/LICENSE-MIT", package_files)
         self.assertNotIn("licenses/registry-notices.json", package_files)
 
+    def test_acceptance_can_pack_an_already_prepared_native_product(self):
+        product = Mock()
+        with (
+            patch.object(pack_nuget, "prepare_generated") as generate,
+            patch.object(pack_nuget.load("nuget"), "pack_native") as verify_and_pack,
+        ):
+            pack_nuget.pack(("win-x64",), native=product)
+        generate.assert_not_called()
+        self.assertEqual(verify_and_pack.call_args.args, (product,))
+        self.assertEqual(verify_and_pack.call_args.kwargs["runtimes"], ("win-x64",))
+
 
 if __name__ == "__main__":
     unittest.main()

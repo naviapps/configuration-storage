@@ -14,6 +14,7 @@ from pathlib import Path
 from sdk_tooling.adapters import load
 from sdk_tooling.c_headers import prepare_generated
 from sdk_tooling.dotnet import subprocess_environment
+from sdk_tooling.xcframework import xcframework
 
 from distribution.pack_nuget import NUGET_CONFIG, pack
 
@@ -82,10 +83,11 @@ def main():
         raise SystemExit(
             "Parent-built Artifacts/CConfigurationStorage.xcframework is missing; this helper never builds native libraries"
         )
-    artifacts = load("artifacts")
-    artifact = ROOT / "Artifacts" / (MODULE + ".xcframework")
-    prepare_generated(ROOT, env=env)
+    prepare_generated(ROOT, env=env, verify=True)
+    native = xcframework(ROOT)
+    artifacts, artifact = load("artifacts"), native.artifact
     before = artifacts.hashes(artifacts.files(artifact), artifact)
+    native.verify(env)
     output = ROOT / "build/bindings"
     output.mkdir(parents=True, exist_ok=True)
     receipt = {
@@ -116,7 +118,7 @@ def main():
                 "native disposable stores",
             ]
             if not args.no_package:
-                package = pack(("osx-arm64", "osx-x64"), environment=env)
+                package = pack(("osx-arm64", "osx-x64"), environment=env, native=native)
                 run(*load("consumers.nuget").command(package, root=ROOT), env=env)
                 receipt["packages"] = {package.name: artifacts.file_sha256(package)}
                 receipt["coverage"].append("clean local package consumer")

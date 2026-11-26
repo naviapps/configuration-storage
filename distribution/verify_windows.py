@@ -95,7 +95,7 @@ def main(argv=None):
             raise ValueError("The verified native library changed during consumer acceptance")
     package = None
     if not args.native_only:
-        package = pack((RID,), environment=acceptance.env)
+        package = pack((RID,), environment=acceptance.env, native=native)
         bindings.run(
             *load("consumers.nuget").command(package, "--windows-architecture", "x64"),
             env=acceptance.env,

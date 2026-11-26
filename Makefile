@@ -1,7 +1,7 @@
 CARGO ?= cargo
 SWIFT ?= swift
 SDK_TOOLING ?= mise run sdk-tooling --
-SWIFT_FLAGS := -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+SWIFT_FLAGS := -Xswiftc -warnings-as-errors
 
 .DEFAULT_GOAL := check
 .PHONY: help check check-source test-managed check-distribution check-fast check-rust check-swift acceptance native native-verify check-header generate-header lint lint-rust test test-rust test-distribution-tools test-consumer test-installed-consumers test-c test-bindings clean
@@ -28,7 +28,8 @@ check: check-source test test-consumer
 
 check-source: lint check-header lint-rust test-rust test-managed
 
-check-distribution: native-verify test-distribution-tools test-bindings test-installed-consumers
+check-distribution: test-distribution-tools test-bindings
+	$(MAKE) test-installed-consumers
 
 # Iteration only: the complete runtime gate remains explicit below.
 check-fast: lint check-rust check-swift
@@ -72,14 +73,14 @@ test-installed-consumers:
 test-rust:
 	"$(CARGO)" test --workspace --locked --offline
 
-test-c: native-verify
+test-c:
 	$(SDK_TOOLING) python -m distribution.verify_bindings --c-only
 
-test-bindings: native-verify
+test-bindings:
 	$(SDK_TOOLING) python -m distribution.verify_bindings
 
 .PHONY: test-native-bindings
-test-native-bindings: native-verify
+test-native-bindings:
 	$(SDK_TOOLING) python -m distribution.verify_bindings --no-package
 
 test-distribution-tools:

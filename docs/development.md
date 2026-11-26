@@ -7,9 +7,8 @@ For SDK installation and explicit writes, see the [overview](../README.md).
 
 Use Git, mise and a full Xcode installation providing Swift 6.3 or newer, SwiftPM,
 and Apple build tools on macOS 26 or later. `mise.toml` selects developer Python
-and static tools. `global.json` pins .NET. `rust-toolchain.toml` selects Rust 1.100.0,
-rustfmt and Clippy. Review those manifests, then prepare the pinned tools before running
-checks:
+and static tools. `global.json` pins .NET. [rust-toolchain.toml](../rust-toolchain.toml)
+selects Rust, rustfmt and Clippy. Review those manifests before preparing the tools.
 
 ```sh
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
@@ -120,11 +119,10 @@ companion lock and metadata files. The report ties the checked-out SDK commit to
 the isolated Rust and C fixture results.
 
 The [SDK workflow](../.github/workflows/check.yml) runs strict Swift tests and
-the standalone SwiftPM consumer on macOS 26 with Xcode 26.6 and on macOS 27 with
-Xcode 27.2. It runs source lint, Rust checks and .NET binding tests on macOS 27,
-and Rust and .NET SDK tests on Windows x64. Documentation-only changes run
-Markdown formatting and local link checks. Manual runs can select macOS,
-Windows or both.
+the standalone SwiftPM consumer on macOS 26 and 27. It runs source lint, Rust
+checks and .NET binding tests on macOS 27, and Rust and .NET SDK tests on Windows
+x64. Documentation-only changes run Markdown formatting and local link checks.
+Manual runs can select macOS, Windows or both.
 
 ## Maintainer distribution checks
 
@@ -187,7 +185,7 @@ the XCFramework.
 
 The `[native]` section of [sdk-tooling.toml](../sdk-tooling.toml) declares the
 framework inputs, symbol prefix and minimum macOS version. The `make native`
-target requires pinned Rust 1.100.0, both Darwin standard-library targets and
+target requires the pinned Rust toolchain, both Darwin standard-library targets and
 locked offline dependencies. It uses `target/native` and builds `libconfiguration_storage.dylib`
 into a universal arm64/x86_64 framework with minimum macOS 26.0. Its receipt is
 `Artifacts/native-build.json`; verification never refreshes it.

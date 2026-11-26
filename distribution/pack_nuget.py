@@ -17,11 +17,13 @@ NUGET_CONFIG = ROOT / "bindings/dotnet/tests/ConfigurationStorage.Tests/NuGet.Co
 RUNTIMES = ("osx-arm64", "osx-x64", RID)
 
 
-def pack(runtimes, *, environment=None):
+def pack(runtimes, *, environment=None, native=None):
+    """Pack directly or use the product already prepared by an acceptance gate."""
     if not runtimes or set(runtimes) - set(RUNTIMES):
         raise ValueError("ConfigurationStorage supports osx-arm64, osx-x64 and win-x64")
-    prepare_generated(ROOT, env=environment)
-    native = ffi_product(ROOT) if set(runtimes) == {RID} else xcframework(ROOT)
+    if native is None:
+        prepare_generated(ROOT, env=environment)
+        native = ffi_product(ROOT) if set(runtimes) == {RID} else xcframework(ROOT)
     nuget = load("nuget")
     files = {"LICENSE": ROOT / "LICENSE", "README.md": ROOT / "bindings/dotnet/README.md"}
     files.update(nuget.retained_notice_files(ROOT / "ThirdParty", "licenses"))
