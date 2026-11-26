@@ -29,7 +29,6 @@ check: check-source test test-consumer
 check-source: lint check-header lint-rust test-rust test-managed
 
 check-distribution: test-distribution-tools test-bindings
-	$(MAKE) test-installed-consumers
 
 # Iteration only: the complete runtime gate remains explicit below.
 check-fast: lint check-rust check-swift
@@ -68,7 +67,7 @@ test:
 test-consumer:
 	$(SDK_TOOLING) swift-consumer
 
-test-installed-consumers:
+check-distribution test-installed-consumers:
 	$(SDK_TOOLING) rust-c-consumers
 
 test-rust:
