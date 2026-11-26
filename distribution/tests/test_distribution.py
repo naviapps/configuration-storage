@@ -43,7 +43,11 @@ class SDKToolPolicyTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["arguments"], ("--native",))
         self.assertEqual(run.call_args.kwargs["runtime"], "win-x64")
         self.assertEqual(
-            run.call_args.kwargs["properties"], {"ConfigurationStorageNativeLibrary": str(library)}
+            run.call_args.kwargs["properties"],
+            {
+                "ConfigurationStorageNativeLibrary": str(library),
+                "UseSharedCompilation": "false",
+            },
         )
 
     def test_missing_framework_fails_before_any_native_build(self):

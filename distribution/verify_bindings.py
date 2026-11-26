@@ -59,7 +59,10 @@ def managed_tests(dotnet, env, library, *, runtime=None):
         nuget_config=NUGET_CONFIG,
         arguments=("--native",),
         runtime=runtime,
-        properties={"ConfigurationStorageNativeLibrary": str(library)},
+        properties={
+            "ConfigurationStorageNativeLibrary": str(library),
+            "UseSharedCompilation": "false",
+        },
         verify_style=True,
     )
 

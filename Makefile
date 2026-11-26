@@ -91,7 +91,8 @@ format:
 	$(SDK_TOOLING) quality format --dotnet
 
 test-managed:
-	dotnet run --configuration Release --project bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj
+	dotnet run --disable-build-servers --configuration Release \
+	  --project bindings/dotnet/tests/ConfigurationStorage.Tests/ConfigurationStorage.Tests.csproj
 
 clean:
 	$(SDK_TOOLING) clean target .build .native-build build \
