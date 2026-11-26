@@ -79,9 +79,9 @@ and byte-for-byte preservation across rejections at the binding default limit.
 Swift and .NET each exercise the 16 MiB default through their public APIs and check
 that native integrity failures surface as typed errors.
 
-`make lint` (also `mise run lint`) checks owned source and managed whitespace.
-`mise run format` formats owned source. Static checks select source files using
-Git and exclude native artifacts and original notices.
+`mise exec -- make lint` checks owned source and managed whitespace.
+`mise exec -- make format` formats owned source. Static checks select source files
+using Git and exclude native artifacts and original notices.
 
 `make test` uses complete concurrency checks and warnings as errors against
 UUID-owned temporary stores. Distribution checks verify the native receipt
@@ -159,7 +159,8 @@ JSON reflection disabled.
 ### Windows x64 package acceptance
 
 Use an owned Windows 11 environment with host-native Python and the Rust version
-in [`rust-toolchain.toml`](../rust-toolchain.toml). Install the
+in [`rust-toolchain.toml`](../rust-toolchain.toml). Install the uv version pinned
+in [`mise.toml`](../mise.toml) to provide `uvx`. Install the
 `x86_64-pc-windows-msvc` standard library, fetch locked Cargo dependencies and
 prepare Visual Studio C++ tools for the x64 target. An ARM64 worker needs
 ARM64-hosted MSVC and Windows x64 emulation. Set `DOTNET_BIN` to the absolute
