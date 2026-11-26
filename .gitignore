@@ -4,8 +4,8 @@
 /build/
 /.swiftpm/
 /Package.resolved
-**/bin/
-**/obj/
+/bindings/dotnet/**/bin/
+/bindings/dotnet/**/obj/
 **/__pycache__/
 /bindings/dotnet/runtimes/
 .DS_Store

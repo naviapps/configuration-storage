@@ -41,7 +41,8 @@ check-swift:
 	"$(SWIFT)" build --build-tests $(SWIFT_FLAGS)
 
 # Uses the existing artifact; native rebuilds and Windows acceptance belong to the parent.
-acceptance: check check-distribution
+acceptance: check
+	$(MAKE) check-distribution
 
 native:
 	$(SDK_TOOLING) xcframework
